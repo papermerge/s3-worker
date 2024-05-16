@@ -11,21 +11,19 @@ def get_client():
         aws_secret_access_key=settings.aws_secret_access_key,
         region_name=settings.aws_region_name
     )
-    client = session.client(
-        's3',
-        endpoint_url=settings.aws_endpoint_url
-    )
+    client = session.client('s3')
 
     return client
 
 
-def upload(file_path: Path):
+def upload(target_path: str, object_path: str):
     s3_client = get_client()
-    keyname = settings.prefix / file_path
+    _obj_path = Path(object_path)
+    keyname = settings.object_prefix / Path(object_path)
     s3_client.upload_file(
-        file_path,
+        str(target_path),
         settings.bucked_name,
-        keyname
+        str(keyname)
     )
 
 
