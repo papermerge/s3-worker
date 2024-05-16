@@ -16,10 +16,9 @@ def get_client():
     return client
 
 
-def upload(target_path: str, object_path: str):
+def upload(target_path: Path, object_path: Path):
     s3_client = get_client()
-    _obj_path = Path(object_path)
-    keyname = settings.object_prefix / Path(object_path)
+    keyname = settings.object_prefix / object_path
     s3_client.upload_file(
         str(target_path),
         settings.bucked_name,
