@@ -17,14 +17,29 @@ def get_client():
 
 
 def upload(target_path: Path, object_path: Path):
+    """Uploads `target_path` to S3 bucket"""
     s3_client = get_client()
     keyname = settings.object_prefix / object_path
     s3_client.upload_file(
         str(target_path),
-        settings.bucked_name,
-        str(keyname)
+        Bucket=settings.bucked_name,
+        Key=str(keyname)
     )
 
 
-def download():
-    pass
+def delete(object_paths: list[Path]):
+    """Delete one or multiple objects from S3 bucket
+
+    Reference:
+        - https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/delete_objects.html  # noqa
+    """
+    s3_client = get_client()
+    keynames = [
+        str(settings.object_prefix / obj_path) for obj_path in object_paths
+    ]
+    s3_client.delete_objects(
+        Bucket=settings.bucked_name,
+        Delete={
+            'Objects': [{'Key': key} for key in keynames]
+        }
+    )

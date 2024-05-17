@@ -9,7 +9,7 @@ fi
 
 exec_worker() {
   export VIRTUAL_ENV=/app/venv
-  cd /app && poetry run celery -A s3worker worker ${S3_WORKER_ARGS}
+  cd /app && poetry run celery -A s3worker worker -Q s3 ${S3_WORKER_ARGS}
 }
 
 case $CMD in
