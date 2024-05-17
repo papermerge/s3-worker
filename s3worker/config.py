@@ -1,4 +1,3 @@
-from pathlib import Path
 from functools import lru_cache
 from pydantic_settings import BaseSettings
 
@@ -9,6 +8,7 @@ class Settings(BaseSettings):
     bucked_name: str
     object_prefix: str = ''
     aws_region_name: str | None = None
+    papermerge__redis__url: str | None = None
 
 
 @lru_cache()

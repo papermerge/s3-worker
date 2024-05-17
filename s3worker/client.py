@@ -1,6 +1,6 @@
 import boto3
 from pathlib import Path
-from . import config
+from s3worker import config
 
 settings = config.get_settings()
 
