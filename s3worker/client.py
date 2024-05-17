@@ -1,11 +1,17 @@
+import logging
+from uuid import UUID
 import boto3
+
+from botocore.client import BaseClient
 from pathlib import Path
-from s3worker import config
+from s3worker import config, utils
+from s3worker import pathlib as plib
 
 settings = config.get_settings()
+logger = logging.getLogger(__name__)
 
 
-def get_client():
+def get_client() -> BaseClient:
     session = boto3.Session(
         aws_access_key_id=settings.aws_access_key_id,
         aws_secret_access_key=settings.aws_secret_access_key,
@@ -43,3 +49,43 @@ def delete(object_paths: list[Path]):
             'Objects': [{'Key': key} for key in keynames]
         }
     )
+
+
+def add_doc_vers(doc_ver_ids: list[str]):
+    """Given a list of UUID (as str) - add those documents to S3"""
+    s3_client = get_client()
+    for ver in doc_ver_ids:
+        uid = UUID(ver)
+        add_doc_ver(s3_client, uid)
+
+
+def add_doc_ver(client: BaseClient, uid: UUID):
+    # get filename to be uploaded based on the UUID of the doc version
+    file_name = utils.get_filename_in_dir(
+        _doc_ver_base(uid)
+    )
+    if file_name is None:
+        logger.error(
+            f"No filename found in {_doc_ver_base(uid)} directory. "
+            f"Skipping S3 upload for doc version {uid}."
+        )
+        return
+
+    logger.debug(f"file_name={file_name}")
+
+    keyname = settings.object_prefix / plib.docver_path(uid, file_name)
+    target_path = _doc_ver_base / Path(file_name)
+    client.upload_file(
+        str(target_path),
+        Bucket=settings.bucked_name,
+        Key=str(keyname)
+    )
+
+
+def remove_doc_ver(doc_ver_ids: list[str]):
+    """Given a list of UUID (as str) - remove those documents from S3"""
+    pass
+
+
+def _doc_ver_base(uid: UUID) -> Path:
+    return plib.rel2abs(plib.docver_base_path(uid))

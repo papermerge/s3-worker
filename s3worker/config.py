@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     object_prefix: str = ''
     aws_region_name: str | None = None
     papermerge__redis__url: str | None = None
+    papermerge__main__media_root: str
 
 
 @lru_cache()
