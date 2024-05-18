@@ -1,5 +1,8 @@
+import yaml
 from celery import Celery
 from s3worker import config
+from celery.signals import setup_logging
+from logging.config import dictConfig
 
 
 settings = config.get_settings()
@@ -22,6 +25,18 @@ app.conf.update(
     interval_step=0.2,
     interval_max=0.2,
 )
+
+
+@setup_logging.connect
+def config_loggers(*args, **kwags):
+    if settings.papermerge__main__logging_cfg is None:
+        return
+
+    with open(settings.papermerge__main__logging_cfg, 'r') as stream:
+        config = yaml.load(stream, Loader=yaml.FullLoader)
+
+    dictConfig(config)
+
 
 if __name__ == '__main__':
     app.start()
