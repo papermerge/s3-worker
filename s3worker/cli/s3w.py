@@ -28,5 +28,15 @@ def upload(target: TargetPath, keyname: KeynamePath):
 
 
 @app.command()
+def add_doc_vers(uids: list[str]):
+    client.add_doc_vers(uids)
+
+
+@app.command()
+def remove_doc_vers(uids: list[str]):
+    client.remove_doc_vers(uids)
+
+
+@app.command()
 def delete(keynames: KeynamesPath):
     client.delete(keynames)

@@ -28,7 +28,7 @@ def upload(target_path: Path, object_path: Path):
     keyname = settings.object_prefix / object_path
     s3_client.upload_file(
         str(target_path),
-        Bucket=settings.bucked_name,
+        Bucket=settings.bucket_name,
         Key=str(keyname)
     )
 
@@ -44,7 +44,7 @@ def delete(object_paths: list[Path]):
         str(settings.object_prefix / obj_path) for obj_path in object_paths
     ]
     s3_client.delete_objects(
-        Bucket=settings.bucked_name,
+        Bucket=settings.bucket_name,
         Delete={
             'Objects': [{'Key': key} for key in keynames]
         }
@@ -60,6 +60,8 @@ def add_doc_vers(doc_ver_ids: list[str]):
 
 
 def add_doc_ver(client: BaseClient, uid: UUID):
+    logger.info(f"Adding doc_ver {uid} to the Bucket")
+
     # get filename to be uploaded based on the UUID of the doc version
     file_name = utils.get_filename_in_dir(
         _doc_ver_base(uid)
@@ -74,18 +76,57 @@ def add_doc_ver(client: BaseClient, uid: UUID):
     logger.debug(f"file_name={file_name}")
 
     keyname = settings.object_prefix / plib.docver_path(uid, file_name)
-    target_path = _doc_ver_base / Path(file_name)
+    target_path = _doc_ver_base(uid) / Path(file_name)
+    logger.debug(
+        f"Uploading keyname={keyname} to bucket={settings.bucket_name}"
+    )
     client.upload_file(
         str(target_path),
-        Bucket=settings.bucked_name,
+        Bucket=settings.bucket_name,
         Key=str(keyname)
     )
 
 
-def remove_doc_ver(doc_ver_ids: list[str]):
+def remove_doc_vers(doc_ver_ids: list[str]):
     """Given a list of UUID (as str) - remove those documents from S3"""
-    pass
+    s3_client = get_client()
+    for ver in doc_ver_ids:
+        uid = UUID(ver)
+        remove_doc_ver(s3_client, uid)
+
+
+def remove_doc_ver(client: BaseClient, uid: UUID):
+    logger.info(f"Removing doc_ver {uid} from the bucket")
+
+    prefix = str(settings.object_prefix / plib.docver_base_path(uid))
+    objects_to_delete = client.list_objects_v2(
+        Bucket=settings.bucket_name,
+        Prefix=prefix
+    )
+    if 'Contents' not in objects_to_delete:
+        logger.error(f"Empty content for prefix={prefix}. Nothing to delete.")
+        return
+
+    keynames = []
+    for i in objects_to_delete['Contents']:
+        if 'Key' in i:
+            keynames.append(i['Key'])
+        else:
+            logger.warning(
+                f"Item {i} does not have Key attribute. API changed?"
+            )
+
+    logger.debug(
+        f"Deleting keynames={keynames} from bucket={settings.bucket_name}"
+    )
+    client.delete_objects(
+        Bucket=settings.bucket_name,
+        Delete={
+            'Objects': [{'Key': k} for k in keynames]
+        }
+    )
 
 
 def _doc_ver_base(uid: UUID) -> Path:
+    """Returns absolute base directory of the document version"""
     return plib.rel2abs(plib.docver_base_path(uid))
