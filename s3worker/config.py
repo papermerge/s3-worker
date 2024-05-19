@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     papermerge__redis__url: str | None = None
     papermerge__main__media_root: str
     papermerge__main__logging_cfg: Path | None = None
+    papermerge__database__url: str | None = None
 
 @lru_cache()
 def get_settings():

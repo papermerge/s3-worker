@@ -15,9 +15,9 @@ class DocumentVersion(BaseModel):
     size: int = 0
     page_count: int = 0
     document_id: UUID
-    pages: Optional[List[Page]] = []
+    pages: list[Page] = []
 
 
 class Document(BaseModel):
     id: UUID
-    versions: Optional[List[DocumentVersion]] = []
+    versions: list[DocumentVersion] = []

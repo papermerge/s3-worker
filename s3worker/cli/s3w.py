@@ -3,7 +3,7 @@ import typer
 from typing_extensions import Annotated
 from pathlib import Path
 
-from s3worker import client, generate
+from s3worker import client, generate, db
 
 app = typer.Typer(help="Groups basic management")
 
@@ -45,5 +45,6 @@ def delete(keynames: KeynamesPath):
 
 @app.command()
 def doc_thumbnail(doc_id: str):
-    thumb_base = generate.doc_thumbnail(UUID(doc_id))
-    client.upload_doc_thumbnail(thumb_base)
+    with db.get_db() as db_session:
+        thumb_base = generate.doc_thumbnail(db_session, UUID(doc_id))
+        client.upload_doc_thumbnail(thumb_base)

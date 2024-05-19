@@ -1,3 +1,4 @@
+from uuid import UUID
 from sqlalchemy import Column, ForeignKey, String, Table, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 

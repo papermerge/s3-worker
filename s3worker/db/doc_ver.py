@@ -1,9 +1,11 @@
+from uuid import UUID
 from sqlalchemy.orm import Session
 
+from s3worker import schemas
 from s3worker.db.models import (Document, DocumentVersion, Page)
 
 
-def get_last_doc_ver(
+def get_last_version(
     db_session: Session,
     doc_id: UUID
 ) -> schemas.DocumentVersion:
@@ -23,10 +25,10 @@ def get_last_doc_ver(
     return model_doc_ver
 
 
-def get_first_page_uuid(
+def get_first_page(
     db_session: Session,
     doc_ver_id: UUID
-):
+) -> schemas.Page:
     """
     Returns first page of the document version
     identified by doc_ver_id
