@@ -7,7 +7,7 @@ COPY poetry.lock pyproject.toml README.md LICENSE /app/
 
 RUN pip install --upgrade poetry && \
     python -m venv ${VIRTUAL_ENV} && \
-    poetry install -v
+    poetry install -E pgsql -v
 
 COPY s3worker /app/s3worker/
 

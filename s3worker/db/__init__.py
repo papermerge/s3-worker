@@ -1,9 +1,7 @@
 from uuid import UUID
+from .document import get_last_version, get_first_page_uuid
 
-
-def get_last_version(doc_id: UUID):
-    pass
-
-
-def get_first_page_uuid(doc_ver_id: UUID):
-    pass
+__all__ = [
+    'get_last_version',
+    'get_first_page_uuid'
+]
