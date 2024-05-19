@@ -127,6 +127,14 @@ def remove_doc_ver(client: BaseClient, uid: UUID):
     )
 
 
+def upload_doc_thumbnail(doc_ver_id: UUID):
+    pass
+
+
+def upload_doc_ver_previews(doc_ver_id: UUID):
+    pass
+
+
 def _doc_ver_base(uid: UUID) -> Path:
     """Returns absolute base directory of the document version"""
     return plib.rel2abs(plib.docver_base_path(uid))
