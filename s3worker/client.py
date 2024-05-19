@@ -127,8 +127,15 @@ def remove_doc_ver(client: BaseClient, uid: UUID):
     )
 
 
-def upload_doc_thumbnail(doc_ver_id: UUID):
-    pass
+def upload_doc_thumbnail(thumb_base: Path):
+    s3_client = get_client()
+    for target in thumb_base.glob('*.jpg', case_sensitive=False):
+        keyname = settings.object_prefix / thumb_base / target.name
+        s3_client.upload_file(
+            str(target),
+            Bucket=settings.bucket_name,
+            Key=str(keyname)
+        )
 
 
 def upload_doc_ver_previews(doc_ver_id: UUID):
