@@ -25,5 +25,5 @@ def doc_thumbnail(
     return plib.thumbnail_path(first_page_uid, size=size)
 
 
-def doc_ver_previews(doc_id: UUID):
+def doc_previews(doc_id: UUID):
     pass

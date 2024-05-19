@@ -138,7 +138,7 @@ def upload_doc_thumbnail(thumb_base: Path):
         )
 
 
-def upload_doc_ver_previews(doc_ver_id: UUID):
+def upload_doc_previews(doc_ver_id: UUID):
     pass
 
 
