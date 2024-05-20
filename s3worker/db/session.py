@@ -3,9 +3,5 @@ from .engine import engine
 
 
 def get_db():
-    SessionLocal = sessionmaker(engine)
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+    Session = sessionmaker(engine)
+    return Session

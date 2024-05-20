@@ -45,6 +45,7 @@ def delete(keynames: KeynamesPath):
 
 @app.command()
 def doc_thumbnail(doc_id: str):
-    with db.get_db() as db_session:
+    Session = db.get_db()
+    with Session() as db_session:
         thumb_base = generate.doc_thumbnail(db_session, UUID(doc_id))
         client.upload_doc_thumbnail(thumb_base)

@@ -14,9 +14,9 @@ def doc_thumbnail(
 ) -> Path:
     last_ver = db.get_last_version(db_session, doc_id)
     # first page of the doc's last version
-    first_page_uid = db.get_first_page_uuid(db_session, last_ver.id)
+    first_page = db.get_first_page(db_session, last_ver.id)
     abs_thumbnail_path = plib.rel2abs(
-        plib.thumbnail_path(first_page_uid, size=size)
+        plib.thumbnail_path(first_page.id, size=size)
     )
     pdf_path = last_ver.abs_file_path
     image.generate_preview(
@@ -25,7 +25,7 @@ def doc_thumbnail(
         size=size
     )
 
-    return plib.thumbnail_path(first_page_uid, size=size)
+    return plib.thumbnail_path(first_page.id, size=size)
 
 
 def doc_previews(doc_id: UUID):
