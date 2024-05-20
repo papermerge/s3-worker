@@ -127,15 +127,32 @@ def remove_doc_ver(client: BaseClient, uid: UUID):
     )
 
 
-def upload_doc_thumbnail(thumb_base: Path):
+def upload_file(rel_file_path: Path):
+    """Uploads to S3 file specified by relative path
+
+    Path is relative to `media root`.
+    E.g. path "thumbnails/jpg/bd/f8/bdf862be/100.jpg", means that
+    file absolute path on the file system is:
+        <media root>/thumbnails/jpg/bd/f8/bdf862be/100.jpg
+
+    The S3 keyname will then be:
+        <prefix>/thumbnails/jpg/bd/f8/bdf862be/100.jpg
+    """
     s3_client = get_client()
-    for target in thumb_base.glob('*.jpg', case_sensitive=False):
-        keyname = settings.object_prefix / thumb_base / target.name
-        s3_client.upload_file(
-            str(target),
-            Bucket=settings.bucket_name,
-            Key=str(keyname)
-        )
+    keyname = settings.object_prefix / rel_file_path
+    target = plib.rel2abs(rel_file_path)
+
+    if not target.exists():
+        logger.error(f"Target {target} does not exist. Upload to S3 canceled.")
+        return
+
+    logger.debug(f"target={target} keyname={keyname}")
+
+    s3_client.upload_file(
+        str(target),
+        Bucket=settings.bucket_name,
+        Key=str(keyname)
+    )
 
 
 def upload_doc_previews(doc_ver_id: UUID):

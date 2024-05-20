@@ -3,9 +3,13 @@ import typer
 from typing_extensions import Annotated
 from pathlib import Path
 
-from s3worker import client, generate, db
+from s3worker import client, generate, db, utils, config
+
 
 app = typer.Typer(help="Groups basic management")
+settings = config.get_settings()
+
+utils.setup_logging(settings.papermerge__main__logging_cfg)
 
 TargetPath = Annotated[
     Path,
@@ -45,7 +49,12 @@ def delete(keynames: KeynamesPath):
 
 @app.command()
 def doc_thumbnail(doc_id: str):
+    """Generate thumbnail for the document
+
+    Thumbnails is generated for the first page of the last version
+    of the document identified with given UUID
+    """
     Session = db.get_db()
     with Session() as db_session:
-        thumb_base = generate.doc_thumbnail(db_session, UUID(doc_id))
-        client.upload_doc_thumbnail(thumb_base)
+        thumb_path = generate.doc_thumbnail(db_session, UUID(doc_id))
+        client.upload_file(thumb_path)
