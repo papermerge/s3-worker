@@ -140,10 +140,14 @@ def upload_file(rel_file_path: Path):
     """
     s3_client = get_client()
     keyname = settings.object_prefix / rel_file_path
-    target = plib.rel2abs(rel_file_path)
+    target: Path = plib.rel2abs(rel_file_path)
 
     if not target.exists():
         logger.error(f"Target {target} does not exist. Upload to S3 canceled.")
+        return
+
+    if not target.is_file():
+        logger.error(f"Target {target} is not a file. Upload to S3 canceled.")
         return
 
     logger.debug(f"target={target} keyname={keyname}")
