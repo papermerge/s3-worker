@@ -56,5 +56,5 @@ def doc_thumbnail(doc_id: str):
     """
     Session = db.get_db()
     with Session() as db_session:
-        thumb_path = generate.doc_thumbnail(db_session, UUID(doc_id))
+        thumb_path: Path = generate.doc_thumbnail(db_session, UUID(doc_id))
         client.upload_file(thumb_path)
