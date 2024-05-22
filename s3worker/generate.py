@@ -16,14 +16,12 @@ def doc_thumbnail(
     doc_id: UUID,
     size: int = const.DEFAULT_THUMBNAIL_SIZE
 ) -> Path:
-    logger.info(f"Generating thumbnail for {doc_id}")
+    logger.info(f"Generating thumbnail for doc_id={doc_id}")
 
     last_ver = db.get_last_version(db_session, doc_id)
 
-    # first page of the doc's last version
-    first_page = db.get_first_page(db_session, last_ver.id)
     abs_thumbnail_path = plib.rel2abs(
-        plib.thumbnail_path(first_page.id, size=size)
+        plib.thumbnail_path(doc_id, size=size)
     )
     pdf_path = last_ver.abs_file_path
 
@@ -36,7 +34,7 @@ def doc_thumbnail(
         size=size
     )
 
-    thumb_path = plib.thumbnail_path(first_page.id, size=size)
+    thumb_path = plib.thumbnail_path(doc_id, size=size)
     logger.debug(f"thumb_path = {thumb_path}")
     return thumb_path
 

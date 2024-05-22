@@ -29,6 +29,12 @@ databases = ["mysqlclient", "psycopg2"]
 [tool.poetry.scripts]
 s3w = 's3worker.cli.s3w:app'
 
+[tool.poetry.group.dev.dependencies]
+taskipy = "^1.12.2"
+
+[tool.taskipy.tasks]
+worker = "celery -A s3worker worker -E -c 4 --loglevel debug -Q s3,s3preview"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
