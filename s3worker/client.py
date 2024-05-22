@@ -99,33 +99,22 @@ def remove_doc_ver(client: BaseClient, uid: UUID):
     logger.info(f"Removing doc_ver {uid} from the bucket")
 
     prefix = str(settings.object_prefix / plib.docver_base_path(uid))
-    objects_to_delete = client.list_objects_v2(
-        Bucket=settings.bucket_name,
-        Prefix=prefix
-    )
-    if 'Contents' not in objects_to_delete:
-        logger.error(f"Empty content for prefix={prefix}. Nothing to delete.")
-        return
-
-    keynames = []
-    for i in objects_to_delete['Contents']:
-        if 'Key' in i:
-            keynames.append(i['Key'])
-        else:
-            logger.warning(
-                f"Item {i} does not have Key attribute. API changed?"
-            )
-
-    logger.debug(
-        f"Deleting keynames={keynames} from bucket={settings.bucket_name}"
-    )
-    client.delete_objects(
-        Bucket=settings.bucket_name,
-        Delete={
-            'Objects': [{'Key': k} for k in keynames]
-        }
+    remove_files(
+        client,
+        bucket_name=settings.bucket_name,
+        prefix=prefix
     )
 
+
+def remove_doc_thumbnail(uid: UUID):
+    logger.info(f"Removing thumbnail of doc_id={uid} from the bucket")
+    s3_client = get_client()
+    prefix = str(settings.object_prefix / plib.thumbnail_path(uid))
+    remove_files(
+        client=s3_client,
+        bucket_name=settings.bucket_name,
+        prefix=prefix
+    )
 
 def upload_file(rel_file_path: Path):
     """Uploads to S3 file specified by relative path
@@ -166,3 +155,33 @@ def upload_doc_previews(doc_ver_id: UUID):
 def _doc_ver_base(uid: UUID) -> Path:
     """Returns absolute base directory of the document version"""
     return plib.rel2abs(plib.docver_base_path(uid))
+
+
+def remove_files(client: BaseClient, bucket_name: str, prefix: str):
+    """Removes all objects in `bucket_name` starting with `prefix`"""
+    objects_to_delete = client.list_objects_v2(
+        Bucket=bucket_name,
+        Prefix=prefix
+    )
+    if 'Contents' not in objects_to_delete:
+        logger.error(f"Empty content for prefix={prefix}. Nothing to delete.")
+        return
+
+    keynames = []
+    for i in objects_to_delete['Contents']:
+        if 'Key' in i:
+            keynames.append(i['Key'])
+        else:
+            logger.warning(
+                f"Item {i} does not have Key attribute. API changed?"
+            )
+
+    logger.debug(
+        f"Deleting keynames={keynames} from bucket={bucket_name}"
+    )
+    client.delete_objects(
+        Bucket=bucket_name,
+        Delete={
+            'Objects': [{'Key': k} for k in keynames]
+        }
+    )

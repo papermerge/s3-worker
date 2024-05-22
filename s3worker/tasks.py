@@ -18,7 +18,19 @@ def add_doc_vers_task(doc_ver_ids: list[str]):
 @shared_task(name=const.S3_WORKER_REMOVE_DOC_VER)
 def remove_doc_vers_task(doc_ver_ids: list[str]):
     logger.debug('Task started')
-    client.remove_doc_vers(doc_ver_ids)
+    try:
+        client.remove_doc_vers(doc_ver_ids)
+    except Exception as ex:
+        logger.exception(ex)
+
+
+@shared_task(name=const.S3_WORKER_REMOVE_DOC_THUMBNAIL)
+def remove_doc_thumbnail_task(doc_id: str):
+    logger.debug('Task started')
+    try:
+        client.remove_doc_thumbnail(doc_id)
+    except Exception as ex:
+        logger.exception(ex)
 
 
 @shared_task(name=const.S3_WORKER_GENERATE_PREVIEW)
