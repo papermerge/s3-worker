@@ -26,28 +26,32 @@ def get_last_version(
     return model_doc_ver
 
 
-def get_first_page(
+def get_pages(
     db_session: Session,
     doc_ver_id: UUID
-) -> schemas.Page:
+) -> list[schemas.Page]:
     """
     Returns first page of the document version
     identified by doc_ver_id
     """
+    models = []
     with db_session as session:  # noqa
         stmt = select(Page).where(
             Page.document_version_id == doc_ver_id,
         ).order_by(
             Page.number.asc()
-        ).limit(1)
+        )
         try:
-            db_page = session.scalars(stmt).one()
+            db_pages = session.scalars(stmt).all()
         except exc.NoResultFound:
             session.close()
             raise PageNotFound(
-                f"DocVerID={doc_ver_id} does not have pages."
+                f"DocVerID={doc_ver_id} does not have pages(s)."
                 " Maybe it does not have associated file yet?"
             )
-        model = schemas.Page.model_validate(db_page)
+        models = [
+            schemas.Page.model_validate(db_page)
+            for db_page in db_pages
+        ]
 
-    return model
+    return list(models)

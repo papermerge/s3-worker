@@ -43,7 +43,10 @@ def generate_preview_task(doc_id: str):
 
         client.upload_file(thumb_path)
 
-        generate.doc_previews(UUID(doc_id))
-        client.upload_doc_previews(UUID(doc_id))
+        with Session() as db_session:
+            file_paths = generate.doc_previews(db_session, UUID(doc_id))
+
+        for file_path in file_paths:
+            client.upload_file(file_path)
     except Exception as ex:
         logger.exception(ex)
