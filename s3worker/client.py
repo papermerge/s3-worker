@@ -99,8 +99,68 @@ def remove_doc_ver(client: BaseClient, uid: UUID):
     logger.info(f"Removing doc_ver {uid} from the bucket")
 
     prefix = str(settings.object_prefix / plib.docver_base_path(uid))
-    objects_to_delete = client.list_objects_v2(
+    remove_files(
+        client,
+        bucket_name=settings.bucket_name,
+        prefix=prefix
+    )
+
+
+def remove_doc_thumbnail(uid: UUID):
+    logger.info(f"Removing thumbnail of doc_id={uid} from the bucket")
+    s3_client = get_client()
+    prefix = str(settings.object_prefix / plib.thumbnail_path(uid))
+    remove_files(
+        client=s3_client,
+        bucket_name=settings.bucket_name,
+        prefix=prefix
+    )
+
+def upload_file(rel_file_path: Path):
+    """Uploads to S3 file specified by relative path
+
+    Path is relative to `media root`.
+    E.g. path "thumbnails/jpg/bd/f8/bdf862be/100.jpg", means that
+    file absolute path on the file system is:
+        <media root>/thumbnails/jpg/bd/f8/bdf862be/100.jpg
+
+    The S3 keyname will then be:
+        <prefix>/thumbnails/jpg/bd/f8/bdf862be/100.jpg
+    """
+    s3_client = get_client()
+    keyname = settings.object_prefix / rel_file_path
+    target: Path = plib.rel2abs(rel_file_path)
+
+    if not target.exists():
+        logger.error(f"Target {target} does not exist. Upload to S3 canceled.")
+        return
+
+    if not target.is_file():
+        logger.error(f"Target {target} is not a file. Upload to S3 canceled.")
+        return
+
+    logger.debug(f"target={target} keyname={keyname}")
+
+    s3_client.upload_file(
+        str(target),
         Bucket=settings.bucket_name,
+        Key=str(keyname)
+    )
+
+
+def upload_doc_previews(doc_ver_id: UUID):
+    pass
+
+
+def _doc_ver_base(uid: UUID) -> Path:
+    """Returns absolute base directory of the document version"""
+    return plib.rel2abs(plib.docver_base_path(uid))
+
+
+def remove_files(client: BaseClient, bucket_name: str, prefix: str):
+    """Removes all objects in `bucket_name` starting with `prefix`"""
+    objects_to_delete = client.list_objects_v2(
+        Bucket=bucket_name,
         Prefix=prefix
     )
     if 'Contents' not in objects_to_delete:
@@ -117,16 +177,11 @@ def remove_doc_ver(client: BaseClient, uid: UUID):
             )
 
     logger.debug(
-        f"Deleting keynames={keynames} from bucket={settings.bucket_name}"
+        f"Deleting keynames={keynames} from bucket={bucket_name}"
     )
     client.delete_objects(
-        Bucket=settings.bucket_name,
+        Bucket=bucket_name,
         Delete={
             'Objects': [{'Key': k} for k in keynames]
         }
     )
-
-
-def _doc_ver_base(uid: UUID) -> Path:
-    """Returns absolute base directory of the document version"""
-    return plib.rel2abs(plib.docver_base_path(uid))
