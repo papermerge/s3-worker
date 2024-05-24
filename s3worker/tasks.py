@@ -33,6 +33,16 @@ def remove_doc_thumbnail_task(doc_id: str):
         logger.exception(ex)
 
 
+@shared_task(name=const.S3_WORKER_REMOVE_PAGE_THUMBNAIL)
+def remove_page_thumbnail_task(page_ids: list[str]):
+    logger.debug('Task started')
+    try:
+        for page_id in page_ids:
+            client.delete_page(page_id)
+    except Exception as ex:
+        logger.exception(ex)
+
+
 @shared_task(name=const.S3_WORKER_GENERATE_PREVIEW)
 def generate_preview_task(doc_id: str):
     logger.debug('Task started')
