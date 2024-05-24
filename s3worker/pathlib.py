@@ -27,11 +27,7 @@ __all__ = [
     'rel2abs'
 ]
 
-
-def thumbnail_path(
-    uuid: UUID | str,
-    size: int = const.DEFAULT_THUMBNAIL_SIZE
-) -> Path:
+def base_thumbnail_path(uuid: UUID | str) -> Path:
     """
     Relative path to the page thumbnail image.
     """
@@ -42,9 +38,21 @@ def thumbnail_path(
         const.JPG,
         uuid_str[0:2],
         uuid_str[2:4],
-        uuid_str,
-        f"{size}.{const.JPG}"
+        uuid_str
     )
+
+
+def thumbnail_path(
+    uuid: UUID | str,
+    size: int = const.DEFAULT_THUMBNAIL_SIZE
+) -> Path:
+    """
+    Relative path to the page thumbnail image.
+    """
+    base = base_thumbnail_path(uuid)
+
+    return base / f"{size}.{const.JPG}"
+
 
 
 def abs_thumbnail_path(

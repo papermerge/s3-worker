@@ -4,7 +4,7 @@ import boto3
 
 from botocore.client import BaseClient
 from pathlib import Path
-from s3worker import config, utils
+from s3worker import config, utils, db
 from s3worker import pathlib as plib
 
 settings = config.get_settings()
@@ -105,7 +105,6 @@ def remove_doc_ver(client: BaseClient, uid: UUID):
         prefix=prefix
     )
 
-
 def remove_doc_thumbnail(uid: UUID):
     logger.info(f"Removing thumbnail of doc_id={uid} from the bucket")
     s3_client = get_client()
@@ -184,4 +183,15 @@ def remove_files(client: BaseClient, bucket_name: str, prefix: str):
         Delete={
             'Objects': [{'Key': k} for k in keynames]
         }
+    )
+
+
+def delete_page(uid: UUID):
+    """Delete all thumbnails/previews associated with given page ID"""
+    s3_client = get_client()
+    prefix = str(settings.object_prefix / plib.base_thumbnail_path(uid))
+    remove_files(
+        s3_client,
+        bucket_name=settings.bucket_name,
+        prefix=prefix
     )
