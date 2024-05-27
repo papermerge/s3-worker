@@ -25,10 +25,10 @@ def get_client() -> BaseClient:
 def upload(target_path: Path, object_path: Path):
     """Uploads `target_path` to S3 bucket"""
     s3_client = get_client()
-    keyname = settings.object_prefix / object_path
+    keyname = get_prefix() / object_path
     s3_client.upload_file(
         str(target_path),
-        Bucket=settings.bucket_name,
+        Bucket=get_bucket_name(),
         Key=str(keyname)
     )
 
@@ -41,10 +41,10 @@ def delete(object_paths: list[Path]):
     """
     s3_client = get_client()
     keynames = [
-        str(settings.object_prefix / obj_path) for obj_path in object_paths
+        str(get_prefix() / obj_path) for obj_path in object_paths
     ]
     s3_client.delete_objects(
-        Bucket=settings.bucket_name,
+        Bucket=get_bucket_name(),
         Delete={
             'Objects': [{'Key': key} for key in keynames]
         }
@@ -75,14 +75,14 @@ def add_doc_ver(client: BaseClient, uid: UUID):
 
     logger.debug(f"file_name={file_name}")
 
-    keyname = settings.object_prefix / plib.docver_path(uid, file_name)
+    keyname = get_prefix() / plib.docver_path(uid, file_name)
     target_path = _doc_ver_base(uid) / Path(file_name)
     logger.debug(
-        f"Uploading keyname={keyname} to bucket={settings.bucket_name}"
+        f"Uploading keyname={keyname} to bucket={get_bucket_name()}"
     )
     client.upload_file(
         str(target_path),
-        Bucket=settings.bucket_name,
+        Bucket=get_bucket_name(),
         Key=str(keyname)
     )
 
@@ -98,20 +98,20 @@ def remove_doc_vers(doc_ver_ids: list[str]):
 def remove_doc_ver(client: BaseClient, uid: UUID):
     logger.info(f"Removing doc_ver {uid} from the bucket")
 
-    prefix = str(settings.object_prefix / plib.docver_base_path(uid))
+    prefix = str(get_prefix() / plib.docver_base_path(uid))
     remove_files(
         client,
-        bucket_name=settings.bucket_name,
+        bucket_name=get_bucket_name(),
         prefix=prefix
     )
 
 def remove_doc_thumbnail(uid: UUID):
     logger.info(f"Removing thumbnail of doc_id={uid} from the bucket")
     s3_client = get_client()
-    prefix = str(settings.object_prefix / plib.thumbnail_path(uid))
+    prefix = str(get_prefix() / plib.thumbnail_path(uid))
     remove_files(
         client=s3_client,
-        bucket_name=settings.bucket_name,
+        bucket_name=get_bucket_name(),
         prefix=prefix
     )
 
@@ -127,7 +127,7 @@ def upload_file(rel_file_path: Path):
         <prefix>/thumbnails/jpg/bd/f8/bdf862be/100.jpg
     """
     s3_client = get_client()
-    keyname = settings.object_prefix / rel_file_path
+    keyname = get_prefix() / rel_file_path
     target: Path = plib.rel2abs(rel_file_path)
 
     if not target.exists():
@@ -142,7 +142,7 @@ def upload_file(rel_file_path: Path):
 
     s3_client.upload_file(
         str(target),
-        Bucket=settings.bucket_name,
+        Bucket=get_bucket_name(),
         Key=str(keyname)
     )
 
@@ -189,9 +189,17 @@ def remove_files(client: BaseClient, bucket_name: str, prefix: str):
 def delete_page(uid: UUID):
     """Delete all thumbnails/previews associated with given page ID"""
     s3_client = get_client()
-    prefix = str(settings.object_prefix / plib.base_thumbnail_path(uid))
+    prefix = str(get_prefix() / plib.base_thumbnail_path(uid))
     remove_files(
         s3_client,
-        bucket_name=settings.bucket_name,
+        bucket_name=get_bucket_name(),
         prefix=prefix
     )
+
+
+def get_bucket_name():
+    return settings.papermerge__s3__bucket_name
+
+
+def get_prefix():
+    return settings.papermerge__s3__object_prefix
