@@ -1,6 +1,7 @@
 from uuid import UUID
 import typer
 from typing_extensions import Annotated
+
 from pathlib import Path
 
 from s3worker import client, generate, db, utils, config
@@ -58,3 +59,15 @@ def doc_thumbnail(doc_id: str):
     with Session() as db_session:
         thumb_path: Path = generate.doc_thumbnail(db_session, UUID(doc_id))
         client.upload_file(thumb_path)
+
+
+@app.command()
+def sync():
+    """Uploads all local media data to S3
+
+    Iterates through all local media files and checks if they
+    are present on S3. If not present - upload, otherwise continue.
+    What is important, is that all uploaded objects will be prefixed with
+    `papermerge__s3__object_prefix` (this
+    """
+    client.sync()
