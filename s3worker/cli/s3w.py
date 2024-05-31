@@ -84,7 +84,6 @@ def generate_previews():
         all_docs: list[schemas.Document] = db.get_docs(db_session)
 
         for doc in all_docs:
-            breakpoint()
             thumb_path: Path = generate.doc_thumbnail(db_session, doc.id)
             keyname = prefix / thumb_path
             if not client.s3_obj_exists(bucket_name=bucket_name, keyname=keyname):
