@@ -106,6 +106,7 @@ def remove_doc_ver(client: BaseClient, uid: UUID):
         prefix=prefix
     )
 
+
 def remove_doc_thumbnail(uid: UUID):
     logger.info(f"Removing thumbnail of doc_id={uid} from the bucket")
     s3_client = get_client()
@@ -115,6 +116,7 @@ def remove_doc_thumbnail(uid: UUID):
         bucket_name=get_bucket_name(),
         prefix=prefix
     )
+
 
 def upload_file(rel_file_path: Path):
     """Uploads to S3 file specified by relative path

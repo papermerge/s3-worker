@@ -1,5 +1,6 @@
 from uuid import UUID
 import typer
+import logging
 from typing_extensions import Annotated
 
 from pathlib import Path
@@ -8,6 +9,7 @@ from rich.progress import track
 from s3worker import client, generate, db, utils, config, schemas
 
 
+logger = logging.getLogger(__name__)
 app = typer.Typer(help="Groups basic management")
 settings = config.get_settings()
 
@@ -76,7 +78,8 @@ def sync():
 
 @app.command()
 def generate_previews(progress: bool = False):
-    """Generate doc/pages previews and if necessary uploads them to S3"""
+    """Generate previews for all documents and if the
+     previews are not present on S3 - upload them"""
     Session = db.get_db()
     prefix = settings.papermerge__s3__object_prefix
     bucket_name = settings.papermerge__s3__bucket_name
@@ -100,8 +103,31 @@ def generate_previews(progress: bool = False):
 
             file_paths = generate.doc_previews(db_session, doc.id)
             for file_path in file_paths:
+                keyname = prefix / file_path
                 if not client.s3_obj_exists(
                     bucket_name=bucket_name,
                     keyname=str(keyname)
                 ):
                     client.upload_file(file_path)
+
+
+@app.command()
+def generate_previews(doc_id: str):
+    """Generate doc/pages previews for one specific document
+    and if previews are not present on S3 - upload them
+    """
+    Session = db.get_db()
+    prefix = settings.papermerge__s3__object_prefix
+    bucket_name = settings.papermerge__s3__bucket_name
+
+    with Session() as db_session:
+        file_paths = generate.doc_previews(db_session, UUID(doc_id))
+        for file_path in file_paths:
+            keyname = prefix / file_path
+            logger.debug(f"keyname={keyname}")
+            if not client.s3_obj_exists(
+                bucket_name=bucket_name,
+                keyname=str(keyname)
+            ):
+                logger.debug(f"Uploading {file_path}")
+                client.upload_file(file_path)
