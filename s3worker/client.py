@@ -5,8 +5,8 @@ import boto3
 from botocore.client import BaseClient
 from botocore.exceptions import ClientError
 from pathlib import Path
-from s3worker import config, utils, db
-from s3worker import pathlib as plib
+from s3worker import config, utils
+from s3worker import plib
 
 settings = config.get_settings()
 logger = logging.getLogger(__name__)
@@ -203,7 +203,6 @@ def sync():
     bucket_name=get_bucket_name()
     for target_path, keyname in media_iter():
         if not s3_obj_exists(
-            s3_client,
             bucket_name=bucket_name,
             keyname=str(keyname)
         ):
@@ -215,8 +214,9 @@ def sync():
 
 
 def s3_obj_exists(
-    client: BaseClient, bucket_name: str, keyname: str
+    bucket_name: str, keyname: str
 ) -> bool:
+    client = get_client()
     try:
         client.head_object(Bucket=bucket_name, Key=keyname)
     except ClientError as e:

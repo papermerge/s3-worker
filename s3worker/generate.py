@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from s3worker import db, image
 from s3worker import constants as const
-from s3worker import pathlib as plib
+from s3worker import plib
 
 
 logger = logging.getLogger(__name__)

@@ -4,7 +4,7 @@ from typing_extensions import Annotated
 
 from pathlib import Path
 
-from s3worker import client, generate, db, utils, config
+from s3worker import client, generate, db, utils, config, schemas
 
 
 app = typer.Typer(help="Groups basic management")
@@ -71,3 +71,29 @@ def sync():
     `papermerge__s3__object_prefix` (this
     """
     client.sync()
+
+
+@app.command()
+def generate_previews():
+    """Generate doc/pages previews and if necessary uploads them to S3"""
+    Session = db.get_db()
+    prefix = settings.papermerge__s3__object_prefix
+    bucket_name = settings.papermerge__s3__bucket_name
+
+    with Session() as db_session:
+        all_docs: list[schemas.Document] = db.get_docs(db_session)
+
+        for doc in all_docs:
+            breakpoint()
+            thumb_path: Path = generate.doc_thumbnail(db_session, doc.id)
+            keyname = prefix / thumb_path
+            if not client.s3_obj_exists(bucket_name=bucket_name, keyname=keyname):
+                client.upload_file(thumb_path)
+
+            file_paths = generate.doc_previews(db_session, doc.id)
+            for file_path in file_paths:
+                if not client.s3_obj_exists(
+                    bucket_name=bucket_name,
+                    keyname=keyname
+                ):
+                    client.upload_file(file_path)

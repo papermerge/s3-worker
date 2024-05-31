@@ -6,6 +6,17 @@ from s3worker import schemas
 from s3worker.db.models import (Document, DocumentVersion, Page)
 
 
+def get_docs(db_session: Session) -> list[schemas.Document]:
+    with db_session as session:  # noqa
+        stmt = select(Document)
+        db_docs = session.scalars(stmt).all()
+        model_docs = [
+            schemas.Document.model_validate(db_doc) for db_doc in db_docs
+        ]
+
+    return model_docs
+
+
 def get_last_version(
     db_session: Session,
     doc_id: UUID
