@@ -1,7 +1,7 @@
 from uuid import UUID
 from pydantic import (BaseModel, ConfigDict, Field)
 
-from s3worker import pathlib as plib
+from s3worker import plib
 
 
 class Page(BaseModel):
@@ -11,6 +11,7 @@ class Page(BaseModel):
 
     # Config
     model_config = ConfigDict(from_attributes=True)
+
 
 class DocumentVersion(BaseModel):
     id: UUID
@@ -30,6 +31,7 @@ class DocumentVersion(BaseModel):
             str(self.id),
             str(self.file_name)
         )
+
 
 class Document(BaseModel):
     id: UUID

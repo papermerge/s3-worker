@@ -3,9 +3,10 @@ from uuid import UUID
 import boto3
 
 from botocore.client import BaseClient
+from botocore.exceptions import ClientError
 from pathlib import Path
-from s3worker import config, utils, db
-from s3worker import pathlib as plib
+from s3worker import config, utils
+from s3worker import plib
 
 settings = config.get_settings()
 logger = logging.getLogger(__name__)
@@ -105,6 +106,7 @@ def remove_doc_ver(client: BaseClient, uid: UUID):
         prefix=prefix
     )
 
+
 def remove_doc_thumbnail(uid: UUID):
     logger.info(f"Removing thumbnail of doc_id={uid} from the bucket")
     s3_client = get_client()
@@ -114,6 +116,7 @@ def remove_doc_thumbnail(uid: UUID):
         bucket_name=get_bucket_name(),
         prefix=prefix
     )
+
 
 def upload_file(rel_file_path: Path):
     """Uploads to S3 file specified by relative path
@@ -197,9 +200,51 @@ def delete_page(uid: UUID):
     )
 
 
+def sync():
+    s3_client = get_client()
+    bucket_name=get_bucket_name()
+    for target_path, keyname in media_iter():
+        if not s3_obj_exists(
+            bucket_name=bucket_name,
+            keyname=str(keyname)
+        ):
+            s3_client.upload_file(
+                str(target_path),
+                Bucket=bucket_name,
+                Key=str(keyname)
+            )
+
+
+def s3_obj_exists(
+    bucket_name: str, keyname: str
+) -> bool:
+    client = get_client()
+    try:
+        client.head_object(Bucket=bucket_name, Key=keyname)
+    except ClientError as e:
+        return False
+
+    return True
+
+
+def media_iter():
+    paths = Path(get_media_root()).glob("**/*")
+    prefix = get_prefix()  # s3 prefix
+    for path in paths:
+        if path.is_file():
+            str_path = str(path)
+            str_media = str(get_media_root())
+            str_rel_path = str_path[len(str_media):]
+            yield path, prefix / Path(str_rel_path)
+
+
 def get_bucket_name():
     return settings.papermerge__s3__bucket_name
 
 
 def get_prefix():
     return settings.papermerge__s3__object_prefix
+
+
+def get_media_root():
+    return settings.papermerge__main__media_root
