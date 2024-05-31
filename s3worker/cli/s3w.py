@@ -3,6 +3,7 @@ import typer
 from typing_extensions import Annotated
 
 from pathlib import Path
+from rich.progress import track
 
 from s3worker import client, generate, db, utils, config, schemas
 
@@ -74,7 +75,7 @@ def sync():
 
 
 @app.command()
-def generate_previews():
+def generate_previews(progress: bool = False):
     """Generate doc/pages previews and if necessary uploads them to S3"""
     Session = db.get_db()
     prefix = settings.papermerge__s3__object_prefix
@@ -83,16 +84,24 @@ def generate_previews():
     with Session() as db_session:
         all_docs: list[schemas.Document] = db.get_docs(db_session)
 
-        for doc in all_docs:
+        if progress:
+            all_items = track(all_docs, description="Generating...")
+        else:
+            all_items = all_docs
+
+        for doc in all_items:
             thumb_path: Path = generate.doc_thumbnail(db_session, doc.id)
             keyname = prefix / thumb_path
-            if not client.s3_obj_exists(bucket_name=bucket_name, keyname=keyname):
+            if not client.s3_obj_exists(
+                bucket_name=bucket_name,
+                keyname=str(keyname)
+            ):
                 client.upload_file(thumb_path)
 
             file_paths = generate.doc_previews(db_session, doc.id)
             for file_path in file_paths:
                 if not client.s3_obj_exists(
                     bucket_name=bucket_name,
-                    keyname=keyname
+                    keyname=str(keyname)
                 ):
                     client.upload_file(file_path)
