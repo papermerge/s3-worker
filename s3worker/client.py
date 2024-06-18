@@ -243,7 +243,7 @@ def get_bucket_name():
 
 
 def get_prefix():
-    return settings.papermerge__s3__object_prefix
+    return settings.papermerge__main__prefix
 
 
 def get_media_root():
