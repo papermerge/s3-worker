@@ -1,9 +1,6 @@
-import yaml
 from celery import Celery
 from s3worker import config, utils
 from celery.signals import setup_logging
-from logging.config import dictConfig
-
 
 settings = config.get_settings()
 

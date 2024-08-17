@@ -7,6 +7,7 @@ from botocore.exceptions import ClientError
 from pathlib import Path
 from s3worker import config, utils
 from s3worker import plib
+from s3worker.exceptions import S3DocumentNotFound
 
 settings = config.get_settings()
 logger = logging.getLogger(__name__)
@@ -213,6 +214,20 @@ def sync():
                 Bucket=bucket_name,
                 Key=str(keyname)
             )
+
+
+def download_docver(docver_id: UUID, file_name: str):
+    """Downloads document version from S3"""
+    doc_ver_path = plib.abs_docver_path(docver_id, file_name)
+    keyname = Path(get_prefix()) / plib.docver_path(docver_id, file_name)
+    if not doc_ver_path.exists():
+        if not s3_obj_exists(get_bucket_name(), str(keyname)):
+            # no local version + no s3 version
+            raise S3DocumentNotFound(f"S3 key {keyname} not found")
+
+    client = get_client()
+    doc_ver_path.parent.mkdir(parents=True, exist_ok=True)
+    client.download_file(get_bucket_name(), str(keyname), str(doc_ver_path))
 
 
 def s3_obj_exists(

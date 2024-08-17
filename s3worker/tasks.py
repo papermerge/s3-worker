@@ -4,6 +4,7 @@ from celery import shared_task
 
 from s3worker import generate, client, db
 from s3worker import constants as const
+from s3worker import exceptions
 
 
 logger = logging.getLogger(__name__)
@@ -43,13 +44,24 @@ def remove_page_thumbnail_task(page_ids: list[str]):
         logger.exception(ex)
 
 
-@shared_task(name=const.S3_WORKER_GENERATE_PREVIEW)
+@shared_task(
+    name=const.S3_WORKER_GENERATE_PREVIEW,
+    autoretry_for = (exceptions.S3DocumentNotFound,),
+    # Wait for 10 seconds before starting each new try. At most retry 6 times.
+    retry_kwargs = {"max_retries": 6, "countdown": 10},
+)
 def generate_preview_task(doc_id: str):
     logger.debug('Task started')
+    Session = db.get_db()
+
     try:
-        Session = db.get_db()
         with Session() as db_session:
             thumb_path = generate.doc_thumbnail(db_session, UUID(doc_id))
+            doc_ver = db.get_last_version(db_session, doc_id=UUID(doc_id))
+
+        logger.debug(f"doc_ver.id = {doc_ver.id}")
+        client.download_docver(docver_id=doc_ver.id,
+                               file_name=doc_ver.file_name)
 
         client.upload_file(thumb_path)
 
