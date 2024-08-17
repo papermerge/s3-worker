@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "s3worker"
-version = "0.1.0"
+version = "0.2.0"
 description = "Sync local storage with S3"
 authors = ["Eugen Ciur <eugen@papermerge.com>"]
 readme = "README.md"
