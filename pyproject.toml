@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "s3worker"
-version = "0.3.1"
+version = "0.3.2"
 description = "Sync local storage with S3"
 authors = ["Eugen Ciur <eugen@papermerge.com>"]
 readme = "README.md"
@@ -34,7 +34,7 @@ s3w = 's3worker.cli.s3w:app'
 taskipy = "^1.12.2"
 
 [tool.taskipy.tasks]
-worker = "celery -A s3worker worker -E -c 4 --loglevel debug -Q dev-coco_s3,dev-coco_s3preview"
+worker = "celery -A s3worker worker -E -c 4 --loglevel debug -Q demo_s3,demo_s3preview"
 
 [build-system]
 requires = ["poetry-core"]

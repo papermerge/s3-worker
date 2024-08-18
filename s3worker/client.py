@@ -220,10 +220,16 @@ def download_docver(docver_id: UUID, file_name: str):
     """Downloads document version from S3"""
     doc_ver_path = plib.abs_docver_path(docver_id, file_name)
     keyname = Path(get_prefix()) / plib.docver_path(docver_id, file_name)
-    if not doc_ver_path.exists():
-        if not s3_obj_exists(get_bucket_name(), str(keyname)):
-            # no local version + no s3 version
-            raise S3DocumentNotFound(f"S3 key {keyname} not found")
+
+    if doc_ver_path.exists():
+        # file exists locally, nothing to do
+        logger.debug(f"{doc_ver_path} exists locally")
+        return
+
+    if not s3_obj_exists(get_bucket_name(), str(keyname)):
+        # no local version + no s3 version
+        logger.debug(f"{keyname} was not found on S3")
+        raise S3DocumentNotFound(f"S3 key {keyname} not found")
 
     client = get_client()
     doc_ver_path.parent.mkdir(parents=True, exist_ok=True)
@@ -237,8 +243,10 @@ def s3_obj_exists(
     try:
         client.head_object(Bucket=bucket_name, Key=keyname)
     except ClientError as e:
+        logger.debug(f"keyname={keyname} - not found")
         return False
 
+    logger.debug(f"keyname={keyname} - found")
     return True
 
 
