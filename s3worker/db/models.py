@@ -8,30 +8,30 @@ class Base(DeclarativeBase):
 
 
 class Document(Base):
-    __tablename__ = "core_document"
+    __tablename__ = "documents"
 
     id: Mapped[UUID] = mapped_column(
-        'basetreenode_ptr_id',
-        ForeignKey("core_basetreenode.id"), primary_key=True
+        'node_id',
+        ForeignKey("nodes.id"), primary_key=True
     )
 
 
 class DocumentVersion(Base):
-    __tablename__ = "core_documentversion"
+    __tablename__ = "document_versions"
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
     number: Mapped[int]
     file_name: Mapped[str]
     document_id: Mapped[UUID] = mapped_column(
-        ForeignKey("core_document.basetreenode_ptr_id")
+        ForeignKey("documents.node_id")
     )
 
 
 class Page(Base):
-    __tablename__ = "core_page"
+    __tablename__ = "pages"
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
     number: Mapped[int]
     document_version_id: Mapped[UUID] = mapped_column(
-        ForeignKey("core_documentversion.id")
+        ForeignKey("document_versions.id")
     )

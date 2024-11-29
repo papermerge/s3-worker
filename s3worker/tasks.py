@@ -1,10 +1,11 @@
 import logging
+import uuid
 from uuid import UUID
 from celery import shared_task
 
 from s3worker import generate, client, db
 from s3worker import constants as const
-from s3worker import exceptions
+from s3worker import exc
 
 
 logger = logging.getLogger(__name__)
@@ -29,24 +30,33 @@ def remove_doc_vers_task(doc_ver_ids: list[str]):
 def remove_doc_thumbnail_task(doc_id: str):
     logger.debug('Task started')
     try:
-        client.remove_doc_thumbnail(doc_id)
+        client.remove_doc_thumbnail(uuid.UUID(doc_id))
     except Exception as ex:
         logger.exception(ex)
 
+
+@shared_task(name=const.S3_WORKER_REMOVE_DOCS_THUMBNAIL)  # plural
+def remove_docs_thumbnail_task(doc_ids: list[str]):  # multiple docs
+    logger.debug('Task started')
+    try:
+        for doc_id in doc_ids:
+            client.remove_doc_thumbnail(uuid.UUID(doc_id))
+    except Exception as ex:
+        logger.exception(ex)
 
 @shared_task(name=const.S3_WORKER_REMOVE_PAGE_THUMBNAIL)
 def remove_page_thumbnail_task(page_ids: list[str]):
     logger.debug('Task started')
     try:
         for page_id in page_ids:
-            client.delete_page(page_id)
+            client.delete_page(uuid.UUID(page_id))
     except Exception as ex:
         logger.exception(ex)
 
 
 @shared_task(
     name=const.S3_WORKER_GENERATE_PREVIEW,
-    autoretry_for = (exceptions.S3DocumentNotFound,),
+    autoretry_for = (exc.S3DocumentNotFound,),
     # Wait for 10 seconds before starting each new try. At most retry 6 times.
     retry_kwargs = {"max_retries": 6, "countdown": 10},
 )
