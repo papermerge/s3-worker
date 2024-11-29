@@ -1041,9 +1041,9 @@ files = [
 [extras]
 databases = ["mysqlclient", "psycopg2"]
 mysql = ["mysqlclient"]
-pgsql = ["psycopg2"]
+pg = ["psycopg2"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.13"
-content-hash = "c8fb458f57645abb2a6d6db09086d4ae29e4f6229a4101f1bac54442af57b4ce"
+content-hash = "738e5480c1ef9fa6109d359ae6a521a2c3fd6e8969dbb5ff507d0238ea8e21b0"

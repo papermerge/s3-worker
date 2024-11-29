@@ -23,7 +23,7 @@ rich = "^13.9"
 
 [tool.poetry.extras]
 mysql = ["mysqlclient"]
-pgsql = ["psycopg2"]
+pg  = ["psycopg2"]
 databases = ["mysqlclient", "psycopg2"]
 
 [tool.poetry.scripts]

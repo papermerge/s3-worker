@@ -7,7 +7,7 @@ from botocore.exceptions import ClientError
 from pathlib import Path
 from s3worker import config, utils
 from s3worker import plib
-from s3worker.exceptions import S3DocumentNotFound
+from s3worker.exc import S3DocumentNotFound
 
 settings = config.get_settings()
 logger = logging.getLogger(__name__)
