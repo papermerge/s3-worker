@@ -18,7 +18,7 @@ COPY s3worker /${APP_DIR}/s3worker/
 RUN pip install --upgrade poetry && \
     poetry install -E pg -v
 
-COPY docker/entrypoint.bash /entrypoint.bash
+COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
