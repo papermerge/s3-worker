@@ -1,5 +1,6 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Engine
 from sqlalchemy.pool import NullPool
+from sqlalchemy.orm import sessionmaker
 
 from s3worker.config import get_settings
 
@@ -18,3 +19,9 @@ engine = create_engine(
     connect_args=connect_args,
     poolclass=NullPool
 )
+
+Session = sessionmaker(engine, expire_on_commit=False)
+
+
+def get_engine() -> Engine:
+    return engine
