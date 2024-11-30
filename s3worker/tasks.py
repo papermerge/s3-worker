@@ -6,6 +6,7 @@ from celery import shared_task
 from s3worker import generate, client, db
 from s3worker import constants as const
 from s3worker import exc
+from s3worker.db.engine import Session
 
 
 logger = logging.getLogger(__name__)
