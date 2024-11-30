@@ -8,7 +8,7 @@ if [ -z $CMD ]; then
 fi
 
 exec_worker() {
-  exec poetry run task worker ${S3_WORKER_ARGS}
+  exec poetry run celery -A s3worker.celery_app worker ${S3_WORKER_ARGS}
 }
 
 case $CMD in
