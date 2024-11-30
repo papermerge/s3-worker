@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 CMD="$1"
 
@@ -8,8 +8,7 @@ if [ -z $CMD ]; then
 fi
 
 exec_worker() {
-  export VIRTUAL_ENV=/app/venv
-  cd /app && poetry run celery -A s3worker.celery_app worker ${S3_WORKER_ARGS}
+  exec poetry run task worker ${S3_WORKER_ARGS}
 }
 
 case $CMD in
