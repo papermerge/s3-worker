@@ -63,7 +63,6 @@ def remove_page_thumbnail_task(page_ids: list[str]):
 )
 def generate_preview_task(doc_id: str):
     logger.debug('Task started')
-    Session = db.get_db()
 
     try:
         with Session() as db_session:
