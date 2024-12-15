@@ -205,15 +205,19 @@ def sync():
     s3_client = get_client()
     bucket_name=get_bucket_name()
     for target_path, keyname in media_iter():
+        logger.debug(f"target_path: {target_path}, keyname={keyname}")
         if not s3_obj_exists(
             bucket_name=bucket_name,
             keyname=str(keyname)
         ):
+            logger.debug(f"Uploading {target_path} to {keyname}")
             s3_client.upload_file(
                 str(target_path),
                 Bucket=bucket_name,
                 Key=str(keyname)
             )
+        else:
+            logger.debug(f"Skipping {target_path} as {keyname} exists")
 
 
 def download_docver(docver_id: UUID, file_name: str):
@@ -243,6 +247,7 @@ def s3_obj_exists(
     try:
         client.head_object(Bucket=bucket_name, Key=keyname)
     except ClientError as e:
+        logger.debug(f"S3_OBJECT_EXISTS check: {e}")
         logger.debug(f"keyname={keyname} - not found")
         return False
 
@@ -253,12 +258,19 @@ def s3_obj_exists(
 def media_iter():
     paths = Path(get_media_root()).glob("**/*")
     prefix = get_prefix()  # s3 prefix
+    logger.debug(f"PREFIX={prefix}")
     for path in paths:
         if path.is_file():
             str_path = str(path)
             str_media = str(get_media_root())
-            str_rel_path = str_path[len(str_media):]
-            yield path, prefix / Path(str_rel_path)
+            str_rel_path = str_path[len(str_media) + 1:]
+            keyname = prefix / Path(str_rel_path)
+            logger.debug(f"str_path={str_path}")
+            logger.debug(f"str_media={str_media}")
+            logger.debug(f"str_rel_path={str_rel_path}")
+            logger.debug(f"keyname={keyname}")
+            logger.debug(f"path={path}")
+            yield path, keyname
 
 
 def get_bucket_name():

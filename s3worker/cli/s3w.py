@@ -5,7 +5,9 @@ from typing_extensions import Annotated
 
 from pathlib import Path
 from rich.progress import track
+from rich import print_json
 
+from s3worker.db.engine import Session
 from s3worker import client, generate, db, utils, config, schemas
 
 
@@ -58,7 +60,6 @@ def doc_thumbnail(doc_id: str):
     Thumbnails is generated for the first page of the last version
     of the document identified with given UUID
     """
-    Session = db.get_db()
     with Session() as db_session:
         thumb_path: Path = generate.doc_thumbnail(db_session, UUID(doc_id))
         client.upload_file(thumb_path)
@@ -71,7 +72,7 @@ def sync():
     Iterates through all local media files and checks if they
     are present on S3. If not present - upload, otherwise continue.
     What is important, is that all uploaded objects will be prefixed with
-    `papermerge__s3__object_prefix` (this
+    `papermerge__main__prefix` (this
     """
     client.sync()
 
@@ -80,8 +81,7 @@ def sync():
 def generate_previews(progress: bool = False):
     """Generate previews for all documents and if the
      previews are not present on S3 - upload them"""
-    Session = db.get_db()
-    prefix = settings.papermerge__s3__object_prefix
+    prefix = settings.papermerge__main__prefix
     bucket_name = settings.papermerge__s3__bucket_name
 
     with Session() as db_session:
@@ -116,8 +116,7 @@ def generate_previews(doc_id: str):
     """Generate doc/pages previews for one specific document
     and if previews are not present on S3 - upload them
     """
-    Session = db.get_db()
-    prefix = settings.papermerge__s3__object_prefix
+    prefix = settings.papermerge__main__prefix
     bucket_name = settings.papermerge__s3__bucket_name
 
     with Session() as db_session:
@@ -131,3 +130,9 @@ def generate_previews(doc_id: str):
             ):
                 logger.debug(f"Uploading {file_path}")
                 client.upload_file(file_path)
+
+
+@app.command(name="config")
+def print_config_cmd():
+    """Print config settings"""
+    print_json(settings.json())
