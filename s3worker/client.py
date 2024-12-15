@@ -205,6 +205,7 @@ def sync():
     s3_client = get_client()
     bucket_name=get_bucket_name()
     for target_path, keyname in media_iter():
+        logger.debug(f"target_path: {target_path}, keyname={keyname}")
         if not s3_obj_exists(
             bucket_name=bucket_name,
             keyname=str(keyname)
@@ -243,6 +244,7 @@ def s3_obj_exists(
     try:
         client.head_object(Bucket=bucket_name, Key=keyname)
     except ClientError as e:
+        logger.debug(f"S3_OBJECT_EXISTS check: {e}")
         logger.debug(f"keyname={keyname} - not found")
         return False
 
