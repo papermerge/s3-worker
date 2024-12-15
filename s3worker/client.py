@@ -262,6 +262,11 @@ def media_iter():
             str_media = str(get_media_root())
             str_rel_path = str_path[len(str_media):]
             keyname = prefix / Path(str_rel_path)
+            logger.debug(f"str_path={str_path}")
+            logger.debug(f"str_media={str_media}")
+            logger.debug(f"str_rel_path={str_rel_path}")
+            logger.debug(f"keyname={keyname}")
+            logger.debug(f"path={path}")
             yield path, keyname
 
 
