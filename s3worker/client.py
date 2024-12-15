@@ -260,7 +260,7 @@ def media_iter():
         if path.is_file():
             str_path = str(path)
             str_media = str(get_media_root())
-            str_rel_path = str_path[len(str_media):]
+            str_rel_path = str_path[len(str_media) + 1:]
             keyname = prefix / Path(str_rel_path)
             logger.debug(f"str_path={str_path}")
             logger.debug(f"str_media={str_media}")
