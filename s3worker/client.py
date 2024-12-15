@@ -210,11 +210,14 @@ def sync():
             bucket_name=bucket_name,
             keyname=str(keyname)
         ):
+            logger.debug(f"Uploading {target_path} to {keyname}")
             s3_client.upload_file(
                 str(target_path),
                 Bucket=bucket_name,
                 Key=str(keyname)
             )
+        else:
+            logger.debug(f"Skipping {target_path} as {keyname} exists")
 
 
 def download_docver(docver_id: UUID, file_name: str):
