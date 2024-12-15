@@ -255,12 +255,14 @@ def s3_obj_exists(
 def media_iter():
     paths = Path(get_media_root()).glob("**/*")
     prefix = get_prefix()  # s3 prefix
+    logger.debug(f"PREFIX={prefix}")
     for path in paths:
         if path.is_file():
             str_path = str(path)
             str_media = str(get_media_root())
             str_rel_path = str_path[len(str_media):]
-            yield path, prefix / Path(str_rel_path)
+            keyname = prefix / Path(str_rel_path)
+            yield path, keyname
 
 
 def get_bucket_name():
