@@ -2,6 +2,7 @@ import logging
 import uuid
 from uuid import UUID
 from celery import shared_task
+import botocore.exceptions
 
 from s3worker import generate, client, db
 from s3worker import constants as const
@@ -75,7 +76,23 @@ def generate_preview_task(doc_id: str):
         with Session() as db_session:
             thumb_path = generate.doc_thumbnail(db_session, UUID(doc_id))
 
-        client.upload_file(thumb_path)
+        try:
+            client.upload_file(thumb_path)
+            with Session() as db_session:
+                db.update_doc_img_preview_status(
+                    db_session,
+                    UUID(doc_id),
+                    status=const.PREVIEW_IMAGE_READY
+                )
+
+        except botocore.exceptions.BotoCoreError as e:
+            with Session() as db_session:
+                db.update_doc_img_preview_status(
+                    db_session,
+                    UUID(doc_id),
+                    status=const.PREVIEW_IMAGE_FAILED,
+                    error=str(e)
+                )
 
         with Session() as db_session:
             file_paths = generate.doc_previews(db_session, UUID(doc_id))

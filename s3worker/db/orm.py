@@ -14,6 +14,8 @@ class Document(Base):
         'node_id',
         ForeignKey("nodes.id"), primary_key=True
     )
+    preview_status: Mapped[str] = mapped_column(nullable=True)
+    preview_error: Mapped[str] = mapped_column(nullable=True)
 
 
 class DocumentVersion(Base):
