@@ -57,12 +57,62 @@ def remove_page_thumbnail_task(page_ids: list[str]):
 
 
 @shared_task(
-    name=const.S3_WORKER_GENERATE_PREVIEW,
+    name=const.S3_WORKER_GENERATE_DOC_THUMBNAIL,
     autoretry_for = (exc.S3DocumentNotFound,),
     # Wait for 10 seconds before starting each new try. At most retry 6 times.
     retry_kwargs = {"max_retries": 6, "countdown": 10},
 )
-def generate_preview_task(doc_id: str):
+def generate_doc_thumbnail_task(doc_id: str):
+    """Generate thumbnail image and upload it to S3 storage"""
+    logger.debug('Task started')
+
+    with Session() as db_session:
+        db.update_doc_img_preview_status(
+            db_session,
+            UUID(doc_id),
+            status=const.ImagePreviewStatus.PENDING.value
+        )
+
+    try:
+        with Session() as db_session:
+            doc_ver = db.get_last_version(db_session, doc_id=UUID(doc_id))
+
+        logger.debug(f"doc_ver.id = {doc_ver.id}")
+        client.download_docver(docver_id=doc_ver.id,
+                               file_name=doc_ver.file_name)
+
+        with Session() as db_session:
+            thumb_path = generate.doc_thumbnail(db_session, UUID(doc_id))
+
+        try:
+            client.upload_file(thumb_path)
+            with Session() as db_session:
+                db.update_doc_img_preview_status(
+                    db_session,
+                    UUID(doc_id),
+                    status=const.ImagePreviewStatus.READY.value
+                )
+
+        except botocore.exceptions.BotoCoreError as e:
+            with Session() as db_session:
+                db.update_doc_img_preview_status(
+                    db_session,
+                    UUID(doc_id),
+                    status=const.ImagePreviewStatus.FAILED.value,
+                    error=str(e)
+                )
+
+    except Exception as ex:
+        logger.exception(ex)
+
+
+@shared_task(
+    name=const.S3_WORKER_GENERATE_PAGE_IMAGE,
+    autoretry_for = (exc.S3DocumentNotFound,),
+    # Wait for 10 seconds before starting each new try. At most retry 6 times.
+    retry_kwargs = {"max_retries": 6, "countdown": 10},
+)
+def generate_page_image_task(doc_id: str):
     logger.debug('Task started')
 
     try:
@@ -82,7 +132,7 @@ def generate_preview_task(doc_id: str):
                 db.update_doc_img_preview_status(
                     db_session,
                     UUID(doc_id),
-                    status=const.PREVIEW_IMAGE_READY
+                    status=const.ImagePreviewStatus.READY.value
                 )
 
         except botocore.exceptions.BotoCoreError as e:
@@ -90,7 +140,7 @@ def generate_preview_task(doc_id: str):
                 db.update_doc_img_preview_status(
                     db_session,
                     UUID(doc_id),
-                    status=const.PREVIEW_IMAGE_FAILED,
+                    status=const.ImagePreviewStatus.READY.value,
                     error=str(e)
                 )
 
