@@ -20,7 +20,7 @@ S3_WORKER_GENERATE_DOC_THUMBNAIL = "s3_worker_generate_doc_thumbnail"
 S3_WORKER_GENERATE_PAGE_IMAGE = "s3_worker_generate_page_image"
 
 
-class ImagePreviewStatus(Enum):
+class ImagePreviewStatus(str, Enum):
     """Image preview status
 
     1. If database field `preview_status` is NULL ->

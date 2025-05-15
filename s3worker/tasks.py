@@ -1,15 +1,20 @@
 import logging
+import time
 import uuid
 from uuid import UUID
 from celery import shared_task
 import botocore.exceptions
+from random import randrange
 
 from s3worker import generate, client, db
+from s3worker.config import get_settings
 from s3worker import constants as const
 from s3worker import exc
 from s3worker.db.engine import Session
+from s3worker.config import FileServer
 
 
+settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
@@ -70,8 +75,11 @@ def generate_doc_thumbnail_task(doc_id: str):
         db.update_doc_img_preview_status(
             db_session,
             UUID(doc_id),
-            status=const.ImagePreviewStatus.PENDING.value
+            status=const.ImagePreviewStatus.PENDING
         )
+
+    if settings.papermerge__main__file_server ==  FileServer.S3_LOCAL_TEST:
+        time.sleep(5 + randrange(10))
 
     try:
         with Session() as db_session:
@@ -90,7 +98,7 @@ def generate_doc_thumbnail_task(doc_id: str):
                 db.update_doc_img_preview_status(
                     db_session,
                     UUID(doc_id),
-                    status=const.ImagePreviewStatus.READY.value
+                    status=const.ImagePreviewStatus.READY
                 )
 
         except botocore.exceptions.BotoCoreError as e:
@@ -98,7 +106,7 @@ def generate_doc_thumbnail_task(doc_id: str):
                 db.update_doc_img_preview_status(
                     db_session,
                     UUID(doc_id),
-                    status=const.ImagePreviewStatus.FAILED.value,
+                    status=const.ImagePreviewStatus.FAILED,
                     error=str(e)
                 )
 
@@ -132,7 +140,7 @@ def generate_page_image_task(doc_id: str):
                 db.update_doc_img_preview_status(
                     db_session,
                     UUID(doc_id),
-                    status=const.ImagePreviewStatus.READY.value
+                    status=const.ImagePreviewStatus.READY
                 )
 
         except botocore.exceptions.BotoCoreError as e:
@@ -140,7 +148,7 @@ def generate_page_image_task(doc_id: str):
                 db.update_doc_img_preview_status(
                     db_session,
                     UUID(doc_id),
-                    status=const.ImagePreviewStatus.READY.value,
+                    status=const.ImagePreviewStatus.READY,
                     error=str(e)
                 )
 
