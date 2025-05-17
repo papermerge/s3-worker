@@ -78,7 +78,7 @@ def generate_doc_thumbnail_task(doc_id: str):
             status=const.ImagePreviewStatus.PENDING
         )
 
-    if settings.papermerge__main__file_server ==  FileServer.S3_LOCAL_TEST:
+    if settings.papermerge__main__file_server == FileServer.S3_LOCAL_TEST:
         time.sleep(5 + randrange(10))
 
     try:
@@ -93,7 +93,8 @@ def generate_doc_thumbnail_task(doc_id: str):
             thumb_path = generate.doc_thumbnail(db_session, UUID(doc_id))
 
         try:
-            client.upload_file(thumb_path)
+            if settings.papermerge__main__file_server != FileServer.S3_LOCAL_TEST:
+                client.upload_file(thumb_path)  # upload to S3
             with Session() as db_session:
                 db.update_doc_img_preview_status(
                     db_session,

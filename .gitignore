@@ -22,3 +22,4 @@ media/
 ./static/
 celerybeat-schedule
 .vscode
+.envok.yaml
