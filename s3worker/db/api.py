@@ -1,7 +1,7 @@
 from uuid import UUID
 from sqlalchemy import select
 
-from s3worker import schemas, exc
+from s3worker import schemas, constants
 from s3worker.db.orm import (Document, DocumentVersion, Page)
 from s3worker.db.engine import Session
 
@@ -57,3 +57,26 @@ def get_pages(
     ]
 
     return list(models)
+
+
+def update_doc_img_preview_status(
+    db_session: Session,
+    doc_id: UUID,
+    status: str,
+    error: str | None = None
+):
+    stmt = select(Document).where(Document.id == doc_id)
+    doc = db_session.execute(stmt).scalar_one_or_none()
+
+    if doc is None:
+        raise ValueError(f"Document with ID {doc_id} not found")
+
+    doc.preview_status = status
+    doc.preview_error = error
+
+    try:
+        db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        raise e
+

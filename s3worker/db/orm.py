@@ -10,10 +10,9 @@ class Base(DeclarativeBase):
 class Document(Base):
     __tablename__ = "documents"
 
-    id: Mapped[UUID] = mapped_column(
-        'node_id',
-        ForeignKey("nodes.id"), primary_key=True
-    )
+    id: Mapped[UUID] = mapped_column('node_id', primary_key=True)
+    preview_status: Mapped[str] = mapped_column(nullable=True)
+    preview_error: Mapped[str] = mapped_column(nullable=True)
 
 
 class DocumentVersion(Base):
