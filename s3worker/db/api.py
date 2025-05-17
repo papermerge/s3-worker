@@ -65,9 +65,18 @@ def update_doc_img_preview_status(
     status: str,
     error: str | None = None
 ):
-    doc = db_session.get(Document, doc_id)
+    stmt = select(Document).where(Document.id == doc_id)
+    doc = db_session.execute(stmt).scalar_one_or_none()
+
+    if doc is None:
+        raise ValueError(f"Document with ID {doc_id} not found")
 
     doc.preview_status = status
     doc.preview_error = error
 
-    db_session.commit()
+    try:
+        db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        raise e
+

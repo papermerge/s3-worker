@@ -21,6 +21,15 @@ logger = logging.getLogger(__name__)
 @shared_task(name=const.S3_WORKER_ADD_DOC_VER)
 def add_doc_vers_task(doc_ver_ids: list[str]):
     logger.debug('Task started')
+    file_server = settings.papermerge__main__file_server
+    if file_server == FileServer.S3_LOCAL_TEST:
+        name = "PAPERMERGE__MAIN__FILE_SERVER"
+        value = FileServer.S3_LOCAL_TEST
+        logger.debug(
+            f"Task skipped because {name}  is set to {value}"
+        )
+        return
+
     client.add_doc_vers(doc_ver_ids)
 
 
@@ -86,8 +95,11 @@ def generate_doc_thumbnail_task(doc_id: str):
             doc_ver = db.get_last_version(db_session, doc_id=UUID(doc_id))
 
         logger.debug(f"doc_ver.id = {doc_ver.id}")
-        client.download_docver(docver_id=doc_ver.id,
-                               file_name=doc_ver.file_name)
+
+        client.download_docver(
+            docver_id=doc_ver.id,
+            file_name=doc_ver.file_name
+        )
 
         with Session() as db_session:
             thumb_path = generate.doc_thumbnail(db_session, UUID(doc_id))
