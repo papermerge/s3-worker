@@ -3,7 +3,7 @@ from uuid import UUID
 
 from s3worker import config
 from s3worker import constants as const
-
+from types import ImagePreviewSize
 
 settings = config.get_settings()
 
@@ -52,6 +52,26 @@ def thumbnail_path(
     base = base_thumbnail_path(uuid)
 
     return base / f"{size}.{const.JPG}"
+
+
+def page_preview_path(
+    uuid: UUID | str,
+) -> Path:
+    uuid_str = str(uuid)
+
+    return Path(
+        const.PREVIEWS,
+        const.PAGES,
+        uuid_str[0:2],
+        uuid_str[2:4],
+        uuid_str
+    )
+
+def page_preview_jpg_path(
+    uuid: UUID | str,
+    size: ImagePreviewSize
+) -> Path:
+    return page_preview_path(uuid) / f'{size}.jpg'
 
 
 

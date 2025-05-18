@@ -1,7 +1,8 @@
 from uuid import UUID
 from sqlalchemy import select
 
-from s3worker import schemas, constants
+from typing import Tuple
+from s3worker import schemas, types
 from s3worker.db.orm import (Document, DocumentVersion, Page)
 from s3worker.db.engine import Session
 
@@ -79,4 +80,61 @@ def update_doc_img_preview_status(
     except Exception as e:
         db_session.rollback()
         raise e
+
+
+def get_doc_ver_from_page(
+    db_session: Session,
+    page_id: UUID
+) -> Tuple[UUID | None, str | None]:
+    stmt = select(DocumentVersion.id, DocumentVersion.file_name).join(
+        Page
+    ).where(Page.id == page_id)
+    row = db_session.execute(stmt).one_or_none()
+
+    if row:
+        return row.id, row.file_name
+
+    return None, None
+
+
+def update_page_img_preview_status(
+    db_session: Session,
+    page_id: UUID,
+    status: types.ImagePreviewStatus,
+    size: types.ImagePreviewSize,
+    error: str | None = None
+):
+    stmt = select(Page).where(Page.id == page_id)
+    page = db_session.execute(stmt).scalar_one_or_none()
+
+    if page is None:
+        raise ValueError(f"Page with ID {page_id} not found")
+
+    if size == types.ImagePreviewSize.sm:
+        page.preview_status_sm = status
+        page.preview_error_sm = error
+    elif size == types.ImagePreviewSize.md:
+        page.preview_status_md = status
+        page.preview_error_md = error
+    elif size == types.ImagePreviewSize.lg:
+        page.preview_status_lg = status
+        page.preview_error_lg = error
+    elif size == types.ImagePreviewSize.xl:
+        page.preview_status_xl = status
+        page.preview_error_xl = error
+
+    try:
+        db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        raise e
+
+
+def get_page_number(
+    db_session: Session,
+    page_id: UUID,
+) -> int | None:
+    stmt = select(Page.number).where(Page.id == page_id)
+    row = db_session.execute(stmt).one_or_one()
+    return row.number
 
