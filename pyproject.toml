@@ -2,6 +2,9 @@
 name = "s3worker"
 version = "0.4.2"
 description = "Worker for syncing local media folder with S3 bucket"
+repository = "https://github.com/papermerge/s3-worker"
+keywords = ["worker", "s3", "documents", "dms"]
+packages = [{ include = "s3worker" }]
 authors = [
     { name = "Eugen Ciur", email = "eugen@papermerge.com"}
 ]
