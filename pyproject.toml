@@ -1,29 +1,34 @@
-[tool.poetry]
+[project]
 name = "s3worker"
 version = "0.4.2"
-description = "Sync local storage with S3"
-authors = ["Eugen Ciur <eugen@papermerge.com>"]
+description = "Worker for syncing local media folder with S3 bucket"
+authors = [
+    { name = "Eugen Ciur", email = "eugen@papermerge.com"}
+]
+maintainers = [
+    { name = "Eugen Ciur", email = "eugen@papermerge.com"}
+]
 readme = "README.md"
+homepage = "https://www.papermerge.com/"
+documentation = "https://docs.papermerge.io/"
 license = "MIT"
+requires-python = ">=3.13,<4"
+dependencies = [
+    "botocore == 1.35",
+    "boto3 == 1.35",
+    "celery[gevent,redis] (>=5.2)",
+    "typer >=0.13",
+    "pydantic >=2.10",
+    "pydantic-settings >=2",
+    "pyyaml (>=6.0)",
+    "img2pdf >=0.5.1",
+    "sqlalchemy >=2.0",
+    "rich >= 13.9"
+]
 
-[tool.poetry.dependencies]
-python = "^3.13"
-botocore = "^1.35"
-boto3 = "^1.35"
-celery = {version = "^5.4", extras = ["redis"]}
-typer = "^0.15"
-pydantic = "^2.10"
-pydantic-settings = "^2.4"
-pyyaml = "^6.0.1"
-pdf2image = "^1.17.0"
-sqlalchemy = "^2.0.36"
-psycopg2 = { version = "^2.9", optional = true}
-mysqlclient = {version = "^2.2", optional = true}
-rich = "^13.9"
-
-[tool.poetry.extras]
-mysql = ["mysqlclient"]
-pg  = ["psycopg2"]
+[project.optional-dependencies]
+mysql = ["mysqlclient (>=2.2)"]
+pg = ["psycopg2 (>=2.9.2)"]
 databases = ["mysqlclient", "psycopg2"]
 
 [tool.poetry.scripts]
@@ -31,6 +36,13 @@ s3w = 's3worker.cli.s3w:app'
 
 [tool.poetry.group.dev.dependencies]
 taskipy = "^1.12.2"
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+pytest-asyncio = "^0.21.0"
+pytest = "^8.3.5"
 
 [tool.taskipy.tasks]
 worker = "celery -A s3worker.celery_app worker"
