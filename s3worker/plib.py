@@ -3,7 +3,7 @@ from uuid import UUID
 
 from s3worker import config
 from s3worker import constants as const
-from types import ImagePreviewSize
+from s3worker.types import ImagePreviewSize
 
 settings = config.get_settings()
 

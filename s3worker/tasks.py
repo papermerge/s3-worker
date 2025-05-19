@@ -12,7 +12,7 @@ from s3worker import constants as const
 from s3worker import exc
 from s3worker.db.engine import Session
 from s3worker.config import FileServer
-from types import ImagePreviewSize
+from s3worker.types import ImagePreviewSize
 
 settings = get_settings()
 logger = logging.getLogger(__name__)

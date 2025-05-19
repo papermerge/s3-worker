@@ -51,5 +51,5 @@ pytest = "^8.3.5"
 worker = "celery -A s3worker.celery_app worker"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry>=2.1"]
+build-backend = "poetry.masonry.api"
