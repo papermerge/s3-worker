@@ -8,7 +8,7 @@ on:
       - 's3worker/**'
       - 'tests/**'
       - 'pyproject.toml'
-      - '.github/workflows/test.yml'
+      - '.github/workflows/test.yaml'
       - 'docker/**'
 
 jobs:
