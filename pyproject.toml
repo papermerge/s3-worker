@@ -4,7 +4,6 @@ version = "0.4.2"
 description = "Worker for syncing local media folder with S3 bucket"
 repository = "https://github.com/papermerge/s3-worker"
 keywords = ["worker", "s3", "documents", "dms"]
-packages = [{ include = "s3worker" }]
 authors = [
     { name = "Eugen Ciur", email = "eugen@papermerge.com"}
 ]
@@ -51,5 +50,5 @@ pytest = "^8.3.5"
 worker = "celery -A s3worker.celery_app worker"
 
 [build-system]
-requires = ["poetry>=2.1"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.masonry.api"

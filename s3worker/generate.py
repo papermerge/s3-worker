@@ -3,9 +3,9 @@ from pathlib import Path
 from uuid import UUID
 from sqlalchemy.orm import Session
 
-from s3worker import db, image
-from s3worker import plib, config
-from types import ImagePreviewSize
+from . import db, image
+from . import plib, config
+from .types import ImagePreviewSize
 
 
 settings = config.get_settings()
@@ -24,7 +24,7 @@ PREVIEW_IMAGE_MAP = {
 def doc_thumbnail(
     db_session: Session,
     doc_id: UUID,
-    size: int = settings.papermerge__thumbnail__size
+    size: ImagePreviewSize = settings.papermerge__thumbnail__size
 ) -> Path:
     logger.info(f"Generating thumbnail for doc_id={doc_id}")
 
