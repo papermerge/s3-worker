@@ -45,3 +45,8 @@ jobs:
         env:
           PAPERMERGE__DATABASE__URL: 'postgresql://pmguser:pmgpass@localhost:5432/pmgdb_test'
           PAPERMERGE__MAIN__API_PREFIX: ''
+          PAPERMERGE__S3__BUCKET_NAME: placeholder
+          AWS_REGION_NAME: placeholder
+          AWS_ACCESS_KEY_ID: placeholder
+          AWS_SECRET_ACCESS_KEY: placeholder
+
