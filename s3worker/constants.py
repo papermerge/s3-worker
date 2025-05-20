@@ -1,5 +1,10 @@
 from enum import Enum
 
+INBOX_TITLE = "inbox"
+HOME_TITLE = "home"
+CTYPE_FOLDER = "folder"
+CTYPE_DOCUMENT = "document"
+
 JPG = 'jpg'
 PAGES = 'pages'
 PREVIEWS = "previews"
