@@ -3,13 +3,9 @@ from typing import Literal
 from sqlalchemy import ForeignKey, Enum, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from s3worker.types import ImagePreviewStatus
+from .base import Base
 
 CType = Literal["document", "folder"]
-
-
-class Base(DeclarativeBase):
-    pass
-
 
 
 class User(Base):

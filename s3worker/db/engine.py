@@ -17,8 +17,7 @@ if SQLALCHEMY_DATABASE_URL.startswith('sqlite'):
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
     connect_args=connect_args,
-    poolclass=NullPool,
-    echo=True
+    poolclass=NullPool
 )
 
 Session = sessionmaker(engine, expire_on_commit=False)
