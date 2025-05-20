@@ -24,6 +24,7 @@ dependencies = [
     "pydantic-settings >=2",
     "pyyaml (>=6.0)",
     "img2pdf >=0.5.1",
+    "pdf2image (>=1.16.0)",
     "sqlalchemy >=2.0",
     "rich >= 13.9"
 ]
