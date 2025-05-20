@@ -14,7 +14,7 @@ config = get_settings()
 
 @pytest.fixture()
 def make_user(db_session):
-    print("make_user FIXTURE")
+
     def _maker(username: str):
         user_id = uuid.uuid4()
         home_id = uuid.uuid4()
@@ -57,23 +57,22 @@ def make_user(db_session):
 
 @pytest.fixture(scope="function")
 def db_session():
-    print("Creating tables...")
     engine = get_engine()
     Base.metadata.create_all(engine, checkfirst=False)
+
     with Session() as session:
         yield session
 
-    print("Dropping tables...")
     Base.metadata.drop_all(engine, checkfirst=False)
 
 
 @pytest.fixture()
 def make_page(db_session: Session, user: orm.User):
-    print("make_page FIXTURE")
+
     def _make():
         db_pages = []
         for number in range(1, 4):
-            db_page = orm.Page(number=number, text="blah", page_count=3)
+            db_page = orm.Page(number=number)
             db_pages.append(db_page)
 
         doc_id = uuid.uuid4()
@@ -97,5 +96,4 @@ def make_page(db_session: Session, user: orm.User):
 
 @pytest.fixture()
 def user(make_user) -> orm.User:
-    print("user FIXTURE")
     return make_user(username="random")

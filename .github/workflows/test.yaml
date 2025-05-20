@@ -1,0 +1,47 @@
+name: Tests
+
+on:
+  workflow_dispatch:
+
+  push:
+    paths:
+      - 's3worker/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - '.github/workflows/test.yml'
+      - 'docker/**'
+
+jobs:
+
+  tests_with_postgres:
+    runs-on: ubuntu-22.04
+    services:
+      postgres:
+        image: postgres:16.8
+        env:
+          POSTGRES_PASSWORD: pmgpass
+          POSTGRES_USER: pmguser
+          POSTGRES_DB: pmgdb_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+      - name: Install required debian packages
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils  # required by pdf2image
+      - name: Install python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry==2.1
+          poetry install --with test -E pg && poetry run pytest
+        env:
+          PAPERMERGE__DATABASE__URL: 'postgresql://pmguser:pmgpass@localhost:5432/pmgdb_test'
+          PAPERMERGE__MAIN__API_PREFIX: ''

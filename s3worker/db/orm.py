@@ -90,20 +90,37 @@ class Folder(Node):
     }
 
 
-
-class Document(Base):
+class Document(Node):
     __tablename__ = "documents"
 
-    id: Mapped[uuid.UUID] = mapped_column('node_id', primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        "node_id",
+        ForeignKey("nodes.id", ondelete="CASCADE"),
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+    versions: Mapped[list["DocumentVersion"]] = relationship(
+        back_populates="document", lazy="selectin"
+    )
     preview_status: Mapped[str] = mapped_column(nullable=True)
     preview_error: Mapped[str] = mapped_column(nullable=True)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "document",
+    }
 
 
 class DocumentVersion(Base):
     __tablename__ = "document_versions"
 
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    number: Mapped[int] = mapped_column(default=1)
+    file_name: Mapped[str] = mapped_column(nullable=True)
     number: Mapped[int]
+    document: Mapped[Document] = relationship(back_populates="versions")
+    pages: Mapped[list["Page"]] = relationship(
+        back_populates="document_version", lazy="select"
+    )
     file_name: Mapped[str]
     document_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("documents.node_id")
@@ -113,11 +130,12 @@ class DocumentVersion(Base):
 class Page(Base):
     __tablename__ = "pages"
 
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     number: Mapped[int]
     document_version_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("document_versions.id")
     )
+    document_version: Mapped[DocumentVersion] = relationship(back_populates="pages")
     # `preview_status`
     #  NULL   = no preview available -> image_url will be empty
     #  Ready  = preview available -> image_url will point to preview image
