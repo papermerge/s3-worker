@@ -1,10 +1,8 @@
 import logging
-import time
 import uuid
 from uuid import UUID
 from celery import shared_task
 import botocore.exceptions
-from random import randrange
 
 from s3worker import generate, client, db
 from s3worker.config import get_settings
@@ -12,7 +10,7 @@ from s3worker import constants as const
 from s3worker import exc
 from s3worker.db.engine import Session
 from s3worker.config import FileServer
-from s3worker.types import ImagePreviewSize
+from s3worker.types import ImagePreviewSize, ImagePreviewStatus
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -21,15 +19,6 @@ logger = logging.getLogger(__name__)
 @shared_task(name=const.S3_WORKER_ADD_DOC_VER)
 def add_doc_vers_task(doc_ver_ids: list[str]):
     logger.debug('Task started')
-    file_server = settings.papermerge__main__file_server
-    if file_server == FileServer.S3_LOCAL_TEST:
-        name = "PAPERMERGE__MAIN__FILE_SERVER"
-        value = FileServer.S3_LOCAL_TEST
-        logger.debug(
-            f"Task skipped because {name}  is set to {value}"
-        )
-        return
-
     client.add_doc_vers(doc_ver_ids)
 
 
@@ -84,11 +73,8 @@ def generate_doc_thumbnail_task(doc_id: str):
         db.update_doc_img_preview_status(
             db_session,
             UUID(doc_id),
-            status=const.ImagePreviewStatus.PENDING
+            status=ImagePreviewStatus.pending
         )
-
-    if settings.papermerge__main__file_server == FileServer.S3_LOCAL_TEST:
-        time.sleep(5 + randrange(10))
 
     try:
         with Session() as db_session:
@@ -111,7 +97,7 @@ def generate_doc_thumbnail_task(doc_id: str):
                 db.update_doc_img_preview_status(
                     db_session,
                     UUID(doc_id),
-                    status=const.ImagePreviewStatus.READY
+                    status=ImagePreviewStatus.ready
                 )
 
         except botocore.exceptions.BotoCoreError as e:
@@ -119,7 +105,7 @@ def generate_doc_thumbnail_task(doc_id: str):
                 db.update_doc_img_preview_status(
                     db_session,
                     UUID(doc_id),
-                    status=const.ImagePreviewStatus.FAILED,
+                    status=ImagePreviewStatus.failed,
                     error=str(e)
                 )
 
@@ -139,6 +125,14 @@ def generate_page_image_task(page_id: str):
     try:
         with Session() as db_session:
             doc_ver_id, file_name = db.get_doc_ver_from_page(db_session, page_id=UUID(page_id))
+            sizes = (ImagePreviewSize.sm, ImagePreviewSize.sm, ImagePreviewSize.sm, ImagePreviewSize.sm)
+            for size in sizes:
+                db.update_page_img_preview_status(
+                    db_session,
+                    page_id=UUID(page_id),
+                    size=size,
+                    status=ImagePreviewStatus.pending
+                )
 
         if not doc_ver_id:
             logger.debug(f"Empty value for doc_ver, nothing to do: {doc_ver_id=}, {file_name=} {page_id=}")
@@ -150,7 +144,7 @@ def generate_page_image_task(page_id: str):
             file_name=file_name
         )
 
-        sizes = (ImagePreviewSize.sm, ImagePreviewSize.sm, ImagePreviewSize.sm, ImagePreviewSize.sm)
+        sizes = (ImagePreviewSize.sm, ImagePreviewSize.md, ImagePreviewSize.lg, ImagePreviewSize.xl)
         for size in sizes:
             with Session() as db_session:
                 page_number = db.get_page_number(db_session, UUID(page_id))
@@ -168,7 +162,7 @@ def generate_page_image_task(page_id: str):
                         db_session,
                         page_id=UUID(page_id),
                         size=size,
-                        status=const.ImagePreviewStatus.READY
+                        status=ImagePreviewStatus.ready
                     )
 
             except botocore.exceptions.BotoCoreError as e:
@@ -176,7 +170,7 @@ def generate_page_image_task(page_id: str):
                     db.update_page_img_preview_status(
                         db_session,
                         UUID(page_id),
-                        status=const.ImagePreviewStatus.READY,
+                        status=ImagePreviewStatus.failed,
                         size=size,
                         error=str(e)
                     )
