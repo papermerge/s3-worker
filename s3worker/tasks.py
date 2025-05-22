@@ -14,6 +14,7 @@ from s3worker.types import ImagePreviewSize, ImagePreviewStatus
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
+IMAGE_SIZES = (ImagePreviewSize.sm, ImagePreviewSize.md, ImagePreviewSize.lg, ImagePreviewSize.xl)
 
 
 @shared_task(name=const.S3_WORKER_ADD_DOC_VER)
@@ -125,8 +126,7 @@ def generate_page_image_task(page_id: str):
     try:
         with Session() as db_session:
             doc_ver_id, file_name = db.get_doc_ver_from_page(db_session, page_id=UUID(page_id))
-            sizes = (ImagePreviewSize.sm, ImagePreviewSize.sm, ImagePreviewSize.sm, ImagePreviewSize.sm)
-            for size in sizes:
+            for size in IMAGE_SIZES:
                 db.update_page_img_preview_status(
                     db_session,
                     page_id=UUID(page_id),
@@ -144,19 +144,30 @@ def generate_page_image_task(page_id: str):
             file_name=file_name
         )
 
-        sizes = (ImagePreviewSize.sm, ImagePreviewSize.md, ImagePreviewSize.lg, ImagePreviewSize.xl)
-        for size in sizes:
+        for size in IMAGE_SIZES:
             with Session() as db_session:
                 page_number = db.get_page_number(db_session, UUID(page_id))
                 preview_image_path = generate.gen_page_preview(
                     doc_ver_id=doc_ver_id,
                     file_name=file_name,
-                    page_id=page_id,
-                    page_number=page_number
+                    page_id=UUID(page_id),
+                    page_number=page_number,
+                    size=size
                 )
 
             try:
-                client.upload_file(preview_image_path)
+                ok, err = client.upload_file(preview_image_path)
+                if not ok:
+                    logger.error(f"Generate page image failed: {err}")
+                    with Session() as db_session:
+                        db.update_page_img_preview_status(
+                            db_session,
+                            UUID(page_id),
+                            status=ImagePreviewStatus.failed,
+                            size=size,
+                            error=err
+                        )
+                    return
                 with Session() as db_session:
                     db.update_page_img_preview_status(
                         db_session,

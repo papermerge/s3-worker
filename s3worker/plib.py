@@ -44,14 +44,14 @@ def base_thumbnail_path(uuid: UUID | str) -> Path:
 
 def thumbnail_path(
     uuid: UUID | str,
-    size: ImagePreviewSize
+    size: ImagePreviewSize = ImagePreviewSize.sm
 ) -> Path:
     """
     Relative path to the page thumbnail image.
     """
     base = base_thumbnail_path(uuid)
 
-    return base / f"{size}.{const.JPG}"
+    return base / f"{size.value}.{const.JPG}"
 
 
 def page_preview_path(
@@ -71,7 +71,7 @@ def page_preview_jpg_path(
     uuid: UUID | str,
     size: ImagePreviewSize
 ) -> Path:
-    return page_preview_path(uuid) / f'{size.value}.jpg'
+    return page_preview_path(uuid) / f'{size.value}.{const.JPG}'
 
 
 

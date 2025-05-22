@@ -1,6 +1,7 @@
 import logging
 from uuid import UUID
 import boto3
+from typing import Tuple
 
 from botocore.client import BaseClient
 from botocore.exceptions import ClientError
@@ -119,7 +120,7 @@ def remove_doc_thumbnail(uid: UUID):
     )
 
 
-def upload_file(rel_file_path: Path):
+def upload_file(rel_file_path: Path) -> Tuple[bool, str | None]:
     """Uploads to S3 file specified by relative path
 
     Path is relative to `media root`.
@@ -135,12 +136,14 @@ def upload_file(rel_file_path: Path):
     target: Path = plib.rel2abs(rel_file_path)
 
     if not target.exists():
-        logger.error(f"Target {target} does not exist. Upload to S3 canceled.")
-        return
+        msg = f"Upload failed: {target=} does not exist. Upload to S3 canceled."
+        logger.error(msg)
+        return False, msg
 
     if not target.is_file():
-        logger.error(f"Target {target} is not a file. Upload to S3 canceled.")
-        return
+        msg = f"Upload failed: {target=} is not a file. Upload to S3 canceled."
+        logger.error(msg)
+        return False, msg
 
     logger.debug(f"target={target} keyname={keyname}")
 
@@ -149,6 +152,8 @@ def upload_file(rel_file_path: Path):
         Bucket=get_bucket_name(),
         Key=str(keyname)
     )
+
+    return True, None
 
 
 def upload_doc_previews(doc_ver_id: UUID):
