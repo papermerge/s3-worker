@@ -25,4 +25,14 @@ def test_update_page_img_preview_status(db_session, make_page):
     refreshed_page = db_session.get(orm.Page, page.id)
     assert refreshed_page.preview_status_md == types.ImagePreviewStatus.pending
 
+def test_get_page_number(db_session, make_page):
+    page: orm.Page = make_page()
+
+    page_number = dbapi.get_page_number(
+        db_session,
+        page_id=page.id,
+    )
+
+    assert page_number == page.number
+
 

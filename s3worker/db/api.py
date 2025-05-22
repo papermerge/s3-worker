@@ -135,6 +135,6 @@ def get_page_number(
     page_id: UUID,
 ) -> int | None:
     stmt = select(Page.number).where(Page.id == page_id)
-    row = db_session.execute(stmt).one_or_one()
+    row = db_session.execute(stmt).one_or_none()
     return row.number
 
