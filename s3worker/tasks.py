@@ -1,10 +1,8 @@
 import logging
-import time
 import uuid
 from uuid import UUID
 from celery import shared_task
 import botocore.exceptions
-from random import randrange
 
 from s3worker import generate, client, db
 from s3worker.config import get_settings
@@ -12,24 +10,16 @@ from s3worker import constants as const
 from s3worker import exc
 from s3worker.db.engine import Session
 from s3worker.config import FileServer
-
+from s3worker.types import ImagePreviewSize, ImagePreviewStatus
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
+IMAGE_SIZES = (ImagePreviewSize.sm, ImagePreviewSize.md, ImagePreviewSize.lg, ImagePreviewSize.xl)
 
 
 @shared_task(name=const.S3_WORKER_ADD_DOC_VER)
 def add_doc_vers_task(doc_ver_ids: list[str]):
     logger.debug('Task started')
-    file_server = settings.papermerge__main__file_server
-    if file_server == FileServer.S3_LOCAL_TEST:
-        name = "PAPERMERGE__MAIN__FILE_SERVER"
-        value = FileServer.S3_LOCAL_TEST
-        logger.debug(
-            f"Task skipped because {name}  is set to {value}"
-        )
-        return
-
     client.add_doc_vers(doc_ver_ids)
 
 
@@ -84,11 +74,8 @@ def generate_doc_thumbnail_task(doc_id: str):
         db.update_doc_img_preview_status(
             db_session,
             UUID(doc_id),
-            status=const.ImagePreviewStatus.PENDING
+            status=ImagePreviewStatus.pending
         )
-
-    if settings.papermerge__main__file_server == FileServer.S3_LOCAL_TEST:
-        time.sleep(5 + randrange(10))
 
     try:
         with Session() as db_session:
@@ -111,7 +98,7 @@ def generate_doc_thumbnail_task(doc_id: str):
                 db.update_doc_img_preview_status(
                     db_session,
                     UUID(doc_id),
-                    status=const.ImagePreviewStatus.READY
+                    status=ImagePreviewStatus.ready
                 )
 
         except botocore.exceptions.BotoCoreError as e:
@@ -119,7 +106,7 @@ def generate_doc_thumbnail_task(doc_id: str):
                 db.update_doc_img_preview_status(
                     db_session,
                     UUID(doc_id),
-                    status=const.ImagePreviewStatus.FAILED,
+                    status=ImagePreviewStatus.failed,
                     error=str(e)
                 )
 
@@ -133,42 +120,71 @@ def generate_doc_thumbnail_task(doc_id: str):
     # Wait for 10 seconds before starting each new try. At most retry 6 times.
     retry_kwargs = {"max_retries": 6, "countdown": 10},
 )
-def generate_page_image_task(doc_id: str):
-    logger.debug('Task started')
+def generate_page_image_task(page_id: str):
+    logger.debug(f'Task started {page_id=}')
 
     try:
         with Session() as db_session:
-            doc_ver = db.get_last_version(db_session, doc_id=UUID(doc_id))
-
-        logger.debug(f"doc_ver.id = {doc_ver.id}")
-        client.download_docver(docver_id=doc_ver.id,
-                               file_name=doc_ver.file_name)
-
-        with Session() as db_session:
-            thumb_path = generate.doc_thumbnail(db_session, UUID(doc_id))
-
-        try:
-            client.upload_file(thumb_path)
-            with Session() as db_session:
-                db.update_doc_img_preview_status(
+            doc_ver_id, file_name = db.get_doc_ver_from_page(db_session, page_id=UUID(page_id))
+            for size in IMAGE_SIZES:
+                db.update_page_img_preview_status(
                     db_session,
-                    UUID(doc_id),
-                    status=const.ImagePreviewStatus.READY
+                    page_id=UUID(page_id),
+                    size=size,
+                    status=ImagePreviewStatus.pending
                 )
 
-        except botocore.exceptions.BotoCoreError as e:
+        if not doc_ver_id:
+            logger.debug(f"Empty value for doc_ver, nothing to do: {doc_ver_id=}, {file_name=} {page_id=}")
+            return
+
+        logger.debug(f"{doc_ver_id=} {file_name=}")
+        client.download_docver(
+            docver_id=doc_ver_id,
+            file_name=file_name
+        )
+
+        for size in IMAGE_SIZES:
             with Session() as db_session:
-                db.update_doc_img_preview_status(
-                    db_session,
-                    UUID(doc_id),
-                    status=const.ImagePreviewStatus.READY,
-                    error=str(e)
+                page_number = db.get_page_number(db_session, UUID(page_id))
+                preview_image_path = generate.gen_page_preview(
+                    doc_ver_id=doc_ver_id,
+                    file_name=file_name,
+                    page_id=UUID(page_id),
+                    page_number=page_number,
+                    size=size
                 )
 
-        with Session() as db_session:
-            file_paths = generate.doc_previews(db_session, UUID(doc_id))
+            try:
+                ok, err = client.upload_file(preview_image_path)
+                if not ok:
+                    logger.error(f"Generate page image failed: {err}")
+                    with Session() as db_session:
+                        db.update_page_img_preview_status(
+                            db_session,
+                            UUID(page_id),
+                            status=ImagePreviewStatus.failed,
+                            size=size,
+                            error=err
+                        )
+                    return
+                with Session() as db_session:
+                    db.update_page_img_preview_status(
+                        db_session,
+                        page_id=UUID(page_id),
+                        size=size,
+                        status=ImagePreviewStatus.ready
+                    )
 
-        for file_path in file_paths:
-            client.upload_file(file_path)
+            except botocore.exceptions.BotoCoreError as e:
+                with Session() as db_session:
+                    db.update_page_img_preview_status(
+                        db_session,
+                        UUID(page_id),
+                        status=ImagePreviewStatus.failed,
+                        size=size,
+                        error=str(e)
+                    )
+
     except Exception as ex:
         logger.exception(ex)

@@ -14,15 +14,17 @@ def file_name_generator(size):
 def generate_preview(
     pdf_path: Path,
     output_folder: Path,
-    size: int = const.DEFAULT_THUMBNAIL_SIZE,
+    size_px: int,
+    size_name: str,
     page_number: int = 1,
 ):
     """Generate jpg thumbnail/preview images of PDF document"""
     logger.debug(
-        f"pdf_path={pdf_path},"
-        f"output_folder={output_folder},"
-        f"size={size},"
-        f"page_number={page_number},"
+        f"{pdf_path=},"
+        f"{output_folder=},"
+        f"{size_px=},"
+        f"{size_name=},"
+        f"{page_number=},"
     )
     kwargs = {
         'pdf_path': str(pdf_path),
@@ -31,8 +33,8 @@ def generate_preview(
         'first_page': page_number,
         'last_page': page_number,
         'single_file': True,
-        'size': (size, None),
-        'output_file': file_name_generator(size)
+        'size': (size_px, None),
+        'output_file': file_name_generator(size_name)
     }
     output_folder.mkdir(exist_ok=True, parents=True)
 

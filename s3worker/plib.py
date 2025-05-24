@@ -3,7 +3,7 @@ from uuid import UUID
 
 from s3worker import config
 from s3worker import constants as const
-
+from s3worker.types import ImagePreviewSize
 
 settings = config.get_settings()
 
@@ -44,24 +44,44 @@ def base_thumbnail_path(uuid: UUID | str) -> Path:
 
 def thumbnail_path(
     uuid: UUID | str,
-    size: int = const.DEFAULT_THUMBNAIL_SIZE
+    size: ImagePreviewSize = ImagePreviewSize.sm
 ) -> Path:
     """
     Relative path to the page thumbnail image.
     """
     base = base_thumbnail_path(uuid)
 
-    return base / f"{size}.{const.JPG}"
+    return base / f"{size.value}.{const.JPG}"
+
+
+def page_preview_path(
+    uuid: UUID | str,
+) -> Path:
+    uuid_str = str(uuid)
+
+    return Path(
+        const.PREVIEWS,
+        const.PAGES,
+        uuid_str[0:2],
+        uuid_str[2:4],
+        uuid_str
+    )
+
+def page_preview_jpg_path(
+    uuid: UUID | str,
+    size: ImagePreviewSize
+) -> Path:
+    return page_preview_path(uuid) / f'{size.value}.{const.JPG}'
 
 
 
 def abs_thumbnail_path(
     uuid: UUID | str,
-    size: int = const.DEFAULT_THUMBNAIL_SIZE
+    size: ImagePreviewSize
 ) -> Path:
     return Path(
         settings.papermerge__main__media_root,
-        thumbnail_path(uuid, size)
+        thumbnail_path(uuid, size=size)
     )
 
 
