@@ -5,6 +5,7 @@ from .api import (
     get_pages,
     get_docs,
     update_doc_img_preview_status,
+    get_doc_img_preview_status,
     update_page_img_preview_status,
     get_doc_ver_from_page,
     get_page_number
@@ -16,6 +17,7 @@ __all__ = [
     'get_docs',
     'get_pages',
     'update_doc_img_preview_status',
+    'get_doc_img_preview_status',
     'update_page_img_preview_status',
     'get_doc_ver_from_page',
     'get_page_number',

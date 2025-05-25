@@ -71,6 +71,12 @@ def generate_doc_thumbnail_task(doc_id: str):
     logger.debug('Task started')
 
     with Session() as db_session:
+        status = db.get_doc_img_preview_status(db_session, UUID(doc_id))
+        if status is not None:
+            # which means somebody else already started working on this
+            # task
+            return
+
         db.update_doc_img_preview_status(
             db_session,
             UUID(doc_id),

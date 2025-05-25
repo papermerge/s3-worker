@@ -5,6 +5,7 @@ from typing import Tuple
 from s3worker import schemas, types
 from s3worker.db.orm import (Document, DocumentVersion, Page)
 from s3worker.db.engine import Session
+from s3worker.types import ImagePreviewStatus
 
 
 def get_docs(db_session: Session) -> list[schemas.Document]:
@@ -59,6 +60,15 @@ def get_pages(
 
     return list(models)
 
+
+def get_doc_img_preview_status(
+    db_session: Session,
+    doc_id: UUID
+) -> ImagePreviewStatus | None:
+    stmt = select(Document).where(Document.id == doc_id)
+    doc = db_session.execute(stmt).scalar_one_or_none()
+
+    return doc.preview_status
 
 def update_doc_img_preview_status(
     db_session: Session,
