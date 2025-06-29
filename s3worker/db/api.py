@@ -107,39 +107,6 @@ def get_doc_ver_from_page(
     return None, None
 
 
-def update_page_img_preview_status(
-    db_session: Session,
-    page_id: UUID,
-    status: types.ImagePreviewStatus,
-    size: types.ImagePreviewSize,
-    error: str | None = None
-):
-    stmt = select(Page).where(Page.id == page_id)
-    page = db_session.execute(stmt).scalar_one_or_none()
-
-    if page is None:
-        raise ValueError(f"Page with ID {page_id} not found")
-
-    if size == types.ImagePreviewSize.sm:
-        page.preview_status_sm = status
-        page.preview_error_sm = error
-    elif size == types.ImagePreviewSize.md:
-        page.preview_status_md = status
-        page.preview_error_md = error
-    elif size == types.ImagePreviewSize.lg:
-        page.preview_status_lg = status
-        page.preview_error_lg = error
-    elif size == types.ImagePreviewSize.xl:
-        page.preview_status_xl = status
-        page.preview_error_xl = error
-
-    try:
-        db_session.commit()
-    except Exception as e:
-        db_session.rollback()
-        raise e
-
-
 def get_page_number(
     db_session: Session,
     page_id: UUID,

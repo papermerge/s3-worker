@@ -54,27 +54,6 @@ def thumbnail_path(
     return base / f"{size.value}.{const.JPG}"
 
 
-def page_preview_path(
-    uuid: UUID | str,
-) -> Path:
-    uuid_str = str(uuid)
-
-    return Path(
-        const.PREVIEWS,
-        const.PAGES,
-        uuid_str[0:2],
-        uuid_str[2:4],
-        uuid_str
-    )
-
-def page_preview_jpg_path(
-    uuid: UUID | str,
-    size: ImagePreviewSize
-) -> Path:
-    return page_preview_path(uuid) / f'{size.value}.{const.JPG}'
-
-
-
 def abs_thumbnail_path(
     uuid: UUID | str,
     size: ImagePreviewSize

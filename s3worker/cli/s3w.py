@@ -78,8 +78,8 @@ def sync():
 
 
 @app.command()
-def generate_previews(progress: bool = False):
-    """Generate previews for all documents and if the
+def generate_doc_thumbnails(progress: bool = False):
+    """Generate thumbnails for all documents and if the
      previews are not present on S3 - upload them"""
     prefix = settings.papermerge__main__prefix
     bucket_name = settings.papermerge__s3__bucket_name
@@ -100,36 +100,6 @@ def generate_previews(progress: bool = False):
                 keyname=str(keyname)
             ):
                 client.upload_file(thumb_path)
-
-            file_paths = generate.doc_previews(db_session, doc.id)
-            for file_path in file_paths:
-                keyname = prefix / file_path
-                if not client.s3_obj_exists(
-                    bucket_name=bucket_name,
-                    keyname=str(keyname)
-                ):
-                    client.upload_file(file_path)
-
-
-@app.command()
-def generate_previews(doc_id: str):
-    """Generate doc/pages previews for one specific document
-    and if previews are not present on S3 - upload them
-    """
-    prefix = settings.papermerge__main__prefix
-    bucket_name = settings.papermerge__s3__bucket_name
-
-    with Session() as db_session:
-        file_paths = generate.doc_previews(db_session, UUID(doc_id))
-        for file_path in file_paths:
-            keyname = prefix / file_path
-            logger.debug(f"keyname={keyname}")
-            if not client.s3_obj_exists(
-                bucket_name=bucket_name,
-                keyname=str(keyname)
-            ):
-                logger.debug(f"Uploading {file_path}")
-                client.upload_file(file_path)
 
 
 @app.command(name="config")
