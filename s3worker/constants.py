@@ -7,7 +7,6 @@ CTYPE_DOCUMENT = "document"
 
 JPG = 'jpg'
 PAGES = 'pages'
-PREVIEWS = "previews"
 THUMBNAILS = 'thumbnails'
 DOCVERS = 'docvers'
 OCR = 'ocr'
