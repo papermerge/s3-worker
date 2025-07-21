@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     aws_access_key_id: str
     aws_secret_access_key: str
     aws_region_name: str | None = None
+    aws_endpoint_url: str | None = None
     papermerge__main__file_server: FileServer = FileServer.S3
     papermerge__s3__bucket_name: str
     papermerge__redis__url: str | None = None
