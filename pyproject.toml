@@ -1,6 +1,6 @@
 [project]
 name = "s3worker"
-version = "0.5"
+version = "0.5.1"
 description = "Worker for syncing local media folder with S3 bucket"
 repository = "https://github.com/papermerge/s3-worker"
 keywords = ["worker", "s3", "documents", "dms"]

@@ -6,7 +6,7 @@ Microservice to synchronize local folder with S3 bucket.
 
 ```
 poetry --version
-Poetry (version 2.1.2)
+Poetry (version 2.1.4)
 ```
 
 ## Celery Command
