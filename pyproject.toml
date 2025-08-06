@@ -45,7 +45,7 @@ optional = true
 
 [tool.poetry.group.test.dependencies]
 pytest-asyncio = "^1.1.0"
-pytest = "^8.3.5"
+pytest = "^8.4.1"
 
 [tool.taskipy.tasks]
 worker = "celery -A s3worker.celery_app worker"
