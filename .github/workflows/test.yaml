@@ -38,8 +38,8 @@ jobs:
       - name: Install required debian packages
         run: |
           export DEBIAN_FRONTEND=noninteractive
-          apt update
-          apt install -y poppler-utils # required by pdf2image
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils # required by pdf2image
       - name: Install python dependencies
         run: |
           python -m pip install --upgrade pip
