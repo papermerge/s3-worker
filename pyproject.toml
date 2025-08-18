@@ -26,13 +26,9 @@ dependencies = [
     "img2pdf >=0.5.1",
     "pdf2image (>=1.16.0)",
     "sqlalchemy >=2.0",
-    "rich >= 13.9"
+    "rich >= 13.9",
+    "psycopg[binary] >= 3.2"
 ]
-
-[project.optional-dependencies]
-mysql = ["mysqlclient (>=2.2)"]
-pg = ["psycopg2 (>=2.9.2)"]
-databases = ["mysqlclient", "psycopg2"]
 
 [tool.poetry.scripts]
 s3w = 's3worker.cli.s3w:app'

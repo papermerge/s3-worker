@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     papermerge__main__prefix: str = ''
     papermerge__main__media_root: str
     papermerge__main__logging_cfg: Path | None = None
-    papermerge__database__url: str = 'sqlite:////db/db.sqlite3'
+    papermerge__database__url: str
     papermerge__preview__page_size_sm: int = 200  # pixels
     papermerge__preview__page_size_md: int = 600  # pixels
     papermerge__preview__page_size_lg: int = 900  # pixels
