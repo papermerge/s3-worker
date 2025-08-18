@@ -1,10 +1,11 @@
 # Changelog
 
-## [0.5.1] - 2050-08-06
+## [0.5.1] - 2025-08-18
 
 ### Changes
 
 - Updates dependencies
+- Use psycopg v3 driver. Drop sqlite dependency.
 
 ## [0.5] - not yet released
 

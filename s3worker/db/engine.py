@@ -8,11 +8,11 @@ settings = get_settings()
 
 SQLALCHEMY_DATABASE_URL = settings.papermerge__database__url
 
-connect_args = {}
+SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace(
+    "postgresql://", "postgresql+psycopg://", 1
+)
 
-if SQLALCHEMY_DATABASE_URL.startswith('sqlite'):
-  # sqlite specific connection args
-  connect_args = {"check_same_thread": False}
+connect_args = {}
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,

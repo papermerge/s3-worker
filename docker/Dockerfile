@@ -18,7 +18,7 @@ COPY poetry.lock pyproject.toml README.md LICENSE ${APP_DIR}
 COPY s3worker /${APP_DIR}/s3worker/
 
 RUN pip install --upgrade poetry && \
-    poetry install -E pg -v
+    poetry install -v
 
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
