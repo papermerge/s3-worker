@@ -40,7 +40,7 @@ taskipy = "^1.12.2"
 optional = true
 
 [tool.poetry.group.test.dependencies]
-pytest-asyncio = "^1.1.0"
+pytest-asyncio = "^1.2.0"
 pytest = "^8.4.1"
 
 [tool.taskipy.tasks]
