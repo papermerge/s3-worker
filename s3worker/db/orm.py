@@ -21,26 +21,6 @@ class User(Base):
     nodes: Mapped[list["Node"]] = relationship(
         back_populates="user", primaryjoin="User.id == Node.user_id", cascade="delete"
     )
-    home_folder_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("folders.node_id", deferrable=True, ondelete="CASCADE"),
-        nullable=True,
-    )
-    home_folder: Mapped["Folder"] = relationship(
-        primaryjoin="User.home_folder_id == Folder.id",
-        back_populates="user",
-        viewonly=True,
-        cascade="delete",
-    )
-    inbox_folder_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("folders.node_id", deferrable=True, ondelete="CASCADE"),
-        nullable=True,
-    )
-    inbox_folder: Mapped["Folder"] = relationship(
-        primaryjoin="User.inbox_folder_id == Folder.id",
-        back_populates="user",
-        viewonly=True,
-        cascade="delete",
-    )
 
 
 class Node(Base):

@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     pm_preview_page_size_md: int = 600  # pixels
     pm_preview_page_size_lg: int = 900  # pixels
     pm_preview_page_size_xl: int = 1600  # pixels
-    pm_preview_size: int = 100  # pixels
+    pm_thumbnail_size: int = 100  # pixels
 
 
 def get_settings():

@@ -59,7 +59,7 @@ def abs_thumbnail_path(
     size: ImagePreviewSize
 ) -> Path:
     return Path(
-        settings.papermerge__main__media_root,
+        settings.pm_media_root,
         thumbnail_path(uuid, size=size)
     )
 
@@ -91,7 +91,7 @@ def abs_docver_path(
     file_name: str
 ):
     return Path(
-        settings.papermerge__main__media_root,
+        settings.pm_media_root,
         docver_path(uuid, file_name)
     )
 
@@ -111,7 +111,7 @@ def page_path(
 
 
 def abs_page_path(uuid: UUID | str) -> Path:
-    return Path(settings.papermerge__main__media_root) / page_path(uuid)
+    return Path(settings.pm_media_root) / page_path(uuid)
 
 
 def page_txt_path(
@@ -141,25 +141,25 @@ def page_hocr_path(
 def abs_page_txt_path(
     uuid: UUID | str
 ) -> Path:
-    return Path(settings.papermerge__main__media_root) / page_txt_path(uuid)
+    return Path(settings.pm_media_root) / page_txt_path(uuid)
 
 
 def abs_page_svg_path(
     uuid: UUID | str
 ) -> Path:
-    return Path(settings.papermerge__main__media_root) / page_svg_path(uuid)
+    return Path(settings.pm_media_root) / page_svg_path(uuid)
 
 
 def abs_page_jpg_path(
     uuid: UUID | str
 ) -> Path:
-    return Path(settings.papermerge__main__media_root) / page_jpg_path(uuid)
+    return Path(settings.pm_media_root) / page_jpg_path(uuid)
 
 
 def abs_page_hocr_path(
     uuid: UUID | str
 ) -> Path:
-    return Path(settings.papermerge__main__media_root) / page_hocr_path(uuid)
+    return Path(settings.pm_media_root) / page_hocr_path(uuid)
 
 
 def page_file_type_path():
@@ -172,4 +172,4 @@ def page_file_type_path():
 
 def rel2abs(rel_path: Path) -> Path:
     """Converts relative path to absolute path"""
-    return Path(settings.papermerge__main__media_root) / rel_path
+    return Path(settings.pm_media_root) / rel_path
