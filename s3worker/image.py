@@ -2,8 +2,6 @@ import logging
 from pathlib import Path
 from pdf2image import convert_from_path
 
-from s3worker import constants as const
-
 
 logger = logging.getLogger(__name__)
 

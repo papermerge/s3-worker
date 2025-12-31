@@ -58,6 +58,7 @@ def make_user(db_session):
 @pytest.fixture(scope="function")
 def db_session():
     engine = get_engine()
+
     Base.metadata.create_all(engine, checkfirst=False)
 
     with Session() as session:

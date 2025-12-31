@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def doc_thumbnail(
     db_session: Session,
     doc_id: UUID,
-    size_px: int = settings.papermerge__thumbnail__size
+    size_px: int = settings.pm_thumbnail_size
 ) -> Path:
     logger.info(f"Generating thumbnail for doc_id={doc_id}")
 

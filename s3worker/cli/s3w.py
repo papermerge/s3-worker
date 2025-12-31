@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 app = typer.Typer(help="Groups basic management")
 settings = config.get_settings()
 
-utils.setup_logging(settings.papermerge__main__logging_cfg)
+utils.setup_logging(settings.pm_log_config)
 
 TargetPath = Annotated[
     Path,
@@ -72,7 +72,7 @@ def sync():
     Iterates through all local media files and checks if they
     are present on S3. If not present - upload, otherwise continue.
     What is important, is that all uploaded objects will be prefixed with
-    `papermerge__main__prefix` (this
+    `pm_prefix` (this
     """
     client.sync()
 
@@ -81,8 +81,8 @@ def sync():
 def generate_doc_thumbnails(progress: bool = False):
     """Generate thumbnails for all documents and if the
      previews are not present on S3 - upload them"""
-    prefix = settings.papermerge__main__prefix
-    bucket_name = settings.papermerge__s3__bucket_name
+    prefix = settings.pm_prefix
+    bucket_name = settings.pm_s3_bucket_name
 
     with Session() as db_session:
         all_docs: list[schemas.Document] = db.get_docs(db_session)
