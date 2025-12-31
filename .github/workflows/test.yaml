@@ -13,15 +13,15 @@ on:
 
 jobs:
 
-  tests_with_postgres:
+  tests:
     runs-on: ubuntu-22.04
     services:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_PASSWORD: pmgpass
-          POSTGRES_USER: pmguser
-          POSTGRES_DB: pmgdb_test
+          POSTGRES_PASSWORD: pm
+          POSTGRES_USER: pm
+          POSTGRES_DB: pmdb_test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -45,7 +45,7 @@ jobs:
           uv sync --group dev
           uv run pytest
         env:
-          PM_DB_URL: 'postgresql://pmguser:pmgpass@localhost:5432/pmgdb_test'
+          PM_DB_URL: 'postgresql://pm:pm@localhost:5432/pmdb_test'
           PM_MEDIA_ROOT: /tmp/does/not/matter
           PM_API_PREFIX: ''
           PM_S3_BUCKET_NAME: placeholder
