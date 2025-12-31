@@ -1,51 +1,50 @@
 [project]
 name = "s3worker"
-version = "0.5.1"
+version = "0.6"
 description = "Worker for syncing local media folder with S3 bucket"
-repository = "https://github.com/papermerge/s3-worker"
 keywords = ["worker", "s3", "documents", "dms"]
 authors = [
-    { name = "Eugen Ciur", email = "eugen@papermerge.com"}
+    { name = "Eugen Ciur", email = "eugen@papermerge.com" }
 ]
 maintainers = [
-    { name = "Eugen Ciur", email = "eugen@papermerge.com"}
+    { name = "Eugen Ciur", email = "eugen@papermerge.com" }
 ]
 readme = "README.md"
-homepage = "https://www.papermerge.com/"
-documentation = "https://docs.papermerge.io/"
 license = "MIT"
 requires-python = ">=3.13,<4"
 dependencies = [
-    "botocore == 1.35",
-    "boto3 == 1.35",
-    "celery[gevent,redis] (>=5.2)",
-    "typer >=0.13",
-    "pydantic >=2.10",
-    "pydantic-settings >=2",
-    "pyyaml (>=6.0)",
-    "img2pdf >=0.5.1",
-    "pdf2image (>=1.16.0)",
-    "sqlalchemy >=2.0",
-    "rich >= 13.9",
-    "psycopg[binary] >= 3.2"
+    "botocore==1.35",
+    "boto3==1.35",
+    "celery[gevent,redis]>=5.2",
+    "typer>=0.13",
+    "pydantic>=2.10",
+    "pydantic-settings>=2",
+    "pyyaml>=6.0",
+    "img2pdf>=0.5.1",
+    "pdf2image>=1.16.0",
+    "sqlalchemy>=2.0",
+    "rich>=13.9",
+    "psycopg[binary]>=3.2",
 ]
 
-[tool.poetry.scripts]
-s3w = 's3worker.cli.s3w:app'
+[project.scripts]
+s3w = "s3worker.cli.s3w:app"
 
-[tool.poetry.group.dev.dependencies]
-taskipy = "^1.12.2"
+[project.urls]
+Homepage = "https://www.papermerge.com/"
+Documentation = "https://docs.papermerge.io/"
+Repository = "https://github.com/papermerge/s3-worker"
 
-[tool.poetry.group.test]
-optional = true
-
-[tool.poetry.group.test.dependencies]
-pytest-asyncio = "^1.2.0"
-pytest = "^9.0.1"
+[dependency-groups]
+dev = [
+    "taskipy>=1.12.2",
+    "pytest-asyncio>=1.2.0",
+    "pytest>=9.0.1",
+]
 
 [tool.taskipy.tasks]
 worker = "celery -A s3worker.celery_app worker"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

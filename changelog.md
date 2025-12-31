@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.6] - 2026-01-01
+
+- Switch from Poetry to uv
+
 ## [0.5.1] - 2025-08-18
 
 ### Changes
