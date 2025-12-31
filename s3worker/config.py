@@ -1,7 +1,7 @@
 from enum import Enum
 from pathlib import Path
 
-from pydantic import PostgresDsn, RedisDsn
+from pydantic import PostgresDsn, RedisDsn, computed_field
 from pydantic_settings import BaseSettings
 
 
@@ -34,6 +34,11 @@ class Settings(BaseSettings):
     pm_preview_page_size_lg: int = 900  # pixels
     pm_preview_page_size_xl: int = 1600  # pixels
     pm_thumbnail_size: int = 100  # pixels
+
+    @computed_field
+    @property
+    def db_url(self) -> str:
+        return str(self.pm_db_url).replace("postgresql://", "postgresql+psycopg://", 1)
 
 
 def get_settings():
