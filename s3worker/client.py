@@ -279,12 +279,12 @@ def media_iter():
 
 
 def get_bucket_name():
-    return settings.papermerge__s3__bucket_name
+    return settings.pm_s3_bucket_name
 
 
 def get_prefix():
-    return settings.papermerge__main__prefix
+    return settings.pm_prefix
 
 
 def get_media_root():
-    return settings.papermerge__main__media_root
+    return settings.pm_media_root
