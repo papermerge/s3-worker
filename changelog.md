@@ -3,6 +3,7 @@
 ## [0.6] - 2026-01-01
 
 - Switch from Poetry to uv
+- Use new env var names/config names e.g. `PM_DB_URL` instead of `PAPERMERGE__DATABASE__URL`
 
 ## [0.5.1] - 2025-08-18
 
