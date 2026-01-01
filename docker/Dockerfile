@@ -1,4 +1,4 @@
-FROM python:3.14.0-alpine3.22
+FROM python:3.14-alpine
 
 ENV APP_DIR=/app/
 WORKDIR ${APP_DIR}
@@ -14,11 +14,13 @@ RUN apk update && apk add linux-headers \
     apk upgrade --no-cache && \
     rm -rf /var/cache/apk/*
 
-COPY poetry.lock pyproject.toml README.md LICENSE ${APP_DIR}
+COPY uv.lock pyproject.toml README.md LICENSE ${APP_DIR}
 COPY s3worker /${APP_DIR}/s3worker/
 
-RUN pip install --upgrade poetry && \
-    poetry install -v
+RUN pip install --no-cache-dir uv && \
+    uv pip install --system --no-cache -r <(uv export --frozen --no-dev) && \
+    pip install --no-cache-dir . --no-deps
+
 
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
