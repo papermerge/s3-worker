@@ -37,7 +37,7 @@ exec_worker() {
     echo "S3_WORKER_ARGS was set to $S3_WORKER_ARGS"
   fi
   echo "Starting worker with S3_WORKER_ARGS was set to $S3_WORKER_ARGS"
-  exec poetry run celery -A s3worker.celery_app worker ${S3_WORKER_ARGS}
+  exec uv run celery -A s3worker.celery_app worker ${S3_WORKER_ARGS}
 }
 
 case $CMD in
