@@ -2,6 +2,9 @@ name: Build Image
 
 on:
   push:
+    # Won't trigger this GH action when pushing tags
+    branches:
+      - '**'
     tags:
       - '[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
       - '[0-9]+.[0-9]+.[0-9]+b[0-9]+'
