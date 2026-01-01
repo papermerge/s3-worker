@@ -175,7 +175,7 @@ To migrate from AWS S3 to Cloudflare R2:
 2. Generate R2 API tokens with read/write access
 3. Update environment variables:
    ```bash
-   STORAGE_BACKEND=cloudflare
+   PM_STORAGE_BACKEND=cloudflare
    R2_ACCESS_KEY_ID=your_r2_access_key
    R2_SECRET_ACCESS_KEY=your_r2_secret_key
    R2_ACCOUNT_ID=your_cloudflare_account_id

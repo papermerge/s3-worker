@@ -125,10 +125,10 @@ def info():
     """Show storage configuration info"""
     backend = client.get_storage_backend_name()
     print(f"[bold]Storage Configuration ({backend}):[/bold]")
-    print(f"  Backend: {settings.storage_backend.value}")
+    print(f"  Backend: {settings.pm_storage_backend.value}")
     print(f"  Bucket: {settings.pm_s3_bucket_name}")
     
-    if settings.storage_backend == config.StorageBackend.AWS:
+    if settings.pm_storage_backend == config.StorageBackend.AWS:
         print(f"  Region: {settings.aws_region_name or '(default)'}")
         if settings.aws_access_key_id:
             print(f"  Access Key: {settings.aws_access_key_id[:8]}...")

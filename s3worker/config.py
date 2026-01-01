@@ -21,7 +21,7 @@ class StorageBackend(str, Enum):
 
 class Settings(BaseSettings):
     # Storage backend selection (aws or cloudflare)
-    storage_backend: StorageBackend = StorageBackend.AWS
+    pm_storage_backend: StorageBackend = StorageBackend.AWS
 
     # AWS S3 specific configurations
     aws_access_key_id: str | None = None
@@ -68,12 +68,12 @@ class Settings(BaseSettings):
     @model_validator(mode='after')
     def validate_backend_credentials(self):
         """Validate that required credentials are set for the selected backend."""
-        if self.storage_backend == StorageBackend.AWS:
+        if self.pm_storage_backend == StorageBackend.AWS:
             if not self.aws_access_key_id or not self.aws_secret_access_key:
                 raise ValueError(
                     "AWS backend requires aws_access_key_id and aws_secret_access_key"
                 )
-        elif self.storage_backend == StorageBackend.CLOUDFLARE:
+        elif self.pm_storage_backend == StorageBackend.CLOUDFLARE:
             if not self.r2_access_key_id or not self.r2_secret_access_key:
                 raise ValueError(
                     "Cloudflare backend requires r2_access_key_id and r2_secret_access_key"
