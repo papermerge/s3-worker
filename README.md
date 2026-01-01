@@ -22,10 +22,10 @@ S3 Worker is configured via environment variables.
 
 ### Storage Backend Selection
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `STORAGE_BACKEND` | Storage backend: `aws` or `cloudflare` | `aws` |
-| `PM_S3_BUCKET_NAME` | Bucket name (used for both S3 and R2) | - |
+| Variable             | Description | Default |
+|----------------------|-------------|---------|
+| `PM_STORAGE_BACKEND` | Storage backend: `aws` or `cloudflare` | `aws` |
+| `PM_S3_BUCKET_NAME`  | Bucket name (used for both S3 and R2) | - |
 
 ### AWS S3 Configuration
 
@@ -68,7 +68,7 @@ docker build -t s3worker -f docker/Dockerfile .
 
 # Run with AWS S3
 docker run \
-  -e STORAGE_BACKEND=aws \
+  -e PM_STORAGE_BACKEND=aws \
   -e AWS_ACCESS_KEY_ID=... \
   -e AWS_SECRET_ACCESS_KEY=... \
   -e PM_S3_BUCKET_NAME=my-bucket \
@@ -79,7 +79,7 @@ docker run \
 
 # Run with Cloudflare R2
 docker run \
-  -e STORAGE_BACKEND=cloudflare \
+  -e PM_STORAGE_BACKEND=cloudflare \
   -e R2_ACCESS_KEY_ID=... \
   -e R2_SECRET_ACCESS_KEY=... \
   -e R2_ACCOUNT_ID=... \
