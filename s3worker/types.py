@@ -1,6 +1,32 @@
 from enum import Enum
 
 
+class DocumentProcessingStatus(str, Enum):
+    """Document processing status
+    
+    Tracks the lifecycle of document processing after upload:
+    
+    1. "uploaded" - File uploaded to storage, document record created
+    2. "converting" - Converting image to PDF (for non-PDF uploads)
+    3. "processing_pages" - Counting pages, creating page records
+    4. "ready" - All processing complete, document ready for use
+    5. "failed" - Processing failed, see processing_error for details
+    """
+    uploaded = "uploaded"
+    converting = "converting"
+    processing_pages = "processing_pages"
+    ready = "ready"
+    failed = "failed"
+
+
+class MimeType(str, Enum):
+    """Supported MIME types for documents"""
+    application_pdf = "application/pdf"
+    image_jpeg = "image/jpeg"
+    image_png = "image/png"
+    image_tiff = "image/tiff"
+
+
 class ImagePreviewStatus(str, Enum):
     """Image preview status
 
