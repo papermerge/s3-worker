@@ -1,6 +1,6 @@
 [project]
 name = "s3worker"
-version = "0.6"
+version = "0.7"
 description = "Worker for syncing local media folder with S3 bucket"
 keywords = ["worker", "s3", "documents", "dms"]
 authors = [
@@ -24,7 +24,7 @@ dependencies = [
     "pdf2image>=1.16.0",
     "sqlalchemy>=2.0",
     "rich>=13.9",
-    "psycopg[binary]>=3.2",
+    "psycopg2-binary>=2.9",
 ]
 
 [project.scripts]
@@ -38,7 +38,6 @@ Repository = "https://github.com/papermerge/s3-worker"
 [dependency-groups]
 dev = [
     "taskipy>=1.12.2",
-    "pytest-asyncio>=1.2.0",
     "pytest>=9.0.1",
 ]
 

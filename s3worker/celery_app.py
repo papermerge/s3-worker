@@ -7,7 +7,7 @@ settings = config.get_settings()
 
 app = Celery(
     's3worker',
-    broker=str(settings.pm_redis_url),
+    broker=str(settings.redis_url),
     include=['s3worker.tasks']
 )
 
@@ -26,8 +26,8 @@ app.conf.update(
 
 @setup_logging.connect
 def config_loggers(*args, **kwags):
-    if settings.pm_log_config:
-        utils.setup_logging(settings.pm_log_config)
+    if settings.log_config:
+        utils.setup_logging(settings.log_config)
 
 
 if __name__ == '__main__':

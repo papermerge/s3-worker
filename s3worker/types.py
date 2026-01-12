@@ -50,3 +50,9 @@ class ImagePreviewSize(str, Enum):
     md = "md"  # medium
     lg = "lg"  # large
     xl = "xl"  # extra large
+
+
+class StorageBackend(str, Enum):
+    S3 = 's3'
+    R2 = 'r2'
+    LOCAL = 'local'

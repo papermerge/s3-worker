@@ -42,7 +42,7 @@ def get_client() -> BaseClient:
     if _client is not None:
         return _client
 
-    if settings.pm_storage_backend == StorageBackend.AWS:
+    if settings.storage_backend == StorageBackend.AWS:
         session = boto3.Session(
             aws_access_key_id=settings.aws_access_key_id,
             aws_secret_access_key=settings.aws_secret_access_key,
@@ -353,19 +353,17 @@ def media_iter():
 
 
 def get_bucket_name():
-    return settings.pm_s3_bucket_name
+    return settings.bucket_name
 
 
 def get_prefix():
-    return Path(settings.pm_prefix) if settings.pm_prefix else Path('')
+    return Path(settings.prefix) if settings.prefix else Path('')
 
 
 def get_media_root():
-    return settings.pm_media_root
+    return settings.media_root
 
 
 def get_storage_backend_name() -> str:
     """Return human-readable storage backend name."""
-    if settings.pm_storage_backend == StorageBackend.AWS:
-        return "AWS S3"
-    return "Cloudflare R2"
+    return settings.storage_backend

@@ -1,20 +1,27 @@
 import logging
 import uuid
+import tempfile
+from pathlib import Path
 from uuid import UUID
-from celery import shared_task
-import botocore.exceptions
 
-from s3worker import generate, client, db
+import botocore.exceptions
+import img2pdf
+from pikepdf import Pdf
+from sqlalchemy import select
+from celery import shared_task
+
+from s3worker import generate, client, db, plib, exc, utils, types
 from s3worker.config import get_settings
 from s3worker import constants as const
-from s3worker import exc
 from s3worker.db.engine import Session
-from s3worker.config import FileServer
 from s3worker.types import ImagePreviewSize, ImagePreviewStatus
+from s3worker.types import MimeType, DocumentProcessingStatus
+from s3worker.db.orm import DocumentVersion
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
 IMAGE_SIZES = (ImagePreviewSize.sm, ImagePreviewSize.md, ImagePreviewSize.lg, ImagePreviewSize.xl)
+
 
 
 @shared_task(name=const.S3_WORKER_ADD_DOC_VER)
@@ -98,7 +105,7 @@ def generate_doc_thumbnail_task(doc_id: str):
             thumb_path = generate.doc_thumbnail(db_session, UUID(doc_id))
 
         try:
-            if settings.pm_file_server != FileServer.S3_LOCAL_TEST:
+            if settings.pm_storage_backend != types.StorageBackend.LOCAL:
                 client.upload_file(thumb_path)  # upload to S3
             with Session() as db_session:
                 db.update_doc_img_preview_status(
@@ -137,15 +144,7 @@ def process_upload_task(document_id: str, document_version_id: str):
         document_id: UUID of the document
         document_version_id: UUID of the document version (version 1 - the original)
     """
-    import tempfile
-    from pathlib import Path
-    import img2pdf
-    from pikepdf import Pdf
-    from sqlalchemy import select
-    from s3worker.types import MimeType, DocumentProcessingStatus
-    from s3worker import plib
-    from s3worker.db.orm import DocumentVersion
-    
+
     doc_id = UUID(document_id)
     ver_id = UUID(document_version_id)
     
@@ -177,20 +176,14 @@ def process_upload_task(document_id: str, document_version_id: str):
         # Download the original file from storage
         logger.info(f"Downloading original file: {version.file_name}")
         
-        try:
-            client.download_docver(
-                docver_id=ver_id,
-                file_name=version.file_name
-            )
-        except exc.S3DocumentNotFound as e:
-            logger.error(f"Document not found in storage: {e}")
-            with Session() as db_session:
-                db.update_document_processing_status(
-                    db_session,
-                    doc_id,
-                    status=DocumentProcessingStatus.failed.value,
-                    error=f"File not found in storage: {str(e)}"
-                )
+        if not utils.make_sure_file_exists_for(
+            doc_id=doc_id,
+            docver_id=ver_id,
+            file_name=version.file_name
+        ):
+            name=version.file_name
+            msg = f"Failed to retrieve file locally {name=} {doc_id=} {ver_id=}"
+            logger.error(msg)
             return
         
         original_path = plib.abs_docver_path(ver_id, version.file_name)
