@@ -128,7 +128,7 @@ def generate_doc_thumbnail_task(doc_id: str):
 
 
 @shared_task(
-    name=const.S3_WORKER_PROCESS_UPLOAD,
+    name="process_upload",
     autoretry_for=(Exception,),
     retry_kwargs={"max_retries": 3, "countdown": 5},
 )

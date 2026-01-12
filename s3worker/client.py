@@ -42,14 +42,14 @@ def get_client() -> BaseClient:
     if _client is not None:
         return _client
 
-    if settings.storage_backend == StorageBackend.AWS:
+    if settings.storage_backend == StorageBackend.S3:
         session = boto3.Session(
             aws_access_key_id=settings.aws_access_key_id,
             aws_secret_access_key=settings.aws_secret_access_key,
             region_name=settings.aws_region_name
         )
         _client = session.client('s3')
-    else:
+    elif settings.storage_backend == StorageBackend.R2:
         # Cloudflare R2
         session = boto3.Session(
             aws_access_key_id=settings.r2_access_key_id,
@@ -61,6 +61,8 @@ def get_client() -> BaseClient:
             region_name='auto',  # Required by boto3 but not used by R2
             config=BotoConfig(signature_version='s3v4')
         )
+    else:
+        raise ValueError(f"Unsupported storage backend: {settings.storage_backend}")
 
     return _client
 

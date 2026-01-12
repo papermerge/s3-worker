@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 app = typer.Typer(help="S3/R2 Worker CLI - supports both AWS S3 and Cloudflare R2")
 settings = config.get_settings()
 
-utils.setup_logging(settings.pm_log_config)
+utils.setup_logging(settings.log_config)
 
 TargetPath = Annotated[
     Path,
@@ -76,7 +76,7 @@ def sync():
 
     Iterates through all local media files and checks if they
     are present on storage. If not present - upload, otherwise continue.
-    All uploaded objects will be prefixed with `pm_prefix`.
+    All uploaded objects will be prefixed with `prefix`.
     """
     backend = client.get_storage_backend_name()
     print(f"[bold green]Starting sync to {backend}...[/bold green]")
@@ -88,8 +88,8 @@ def sync():
 def generate_doc_thumbnails(progress: bool = False):
     """Generate thumbnails for all documents and if the
      previews are not present on storage - upload them"""
-    prefix = settings.pm_prefix
-    bucket_name = settings.pm_s3_bucket_name
+    prefix = settings.prefix
+    bucket_name = settings.bucket_name
 
     with Session() as db_session:
         all_docs: list[schemas.Document] = db.get_docs(db_session)
@@ -125,16 +125,16 @@ def info():
     """Show storage configuration info"""
     backend = client.get_storage_backend_name()
     print(f"[bold]Storage Configuration ({backend}):[/bold]")
-    print(f"  Backend: {settings.pm_storage_backend.value}")
-    print(f"  Bucket: {settings.pm_s3_bucket_name}")
+    print(f"  Backend: {settings.storage_backend.value}")
+    print(f"  Bucket: {settings.bucket_name}")
     
-    if settings.pm_storage_backend == config.StorageBackend.AWS:
+    if settings.storage_backend == config.StorageBackend.S3:
         print(f"  Region: {settings.aws_region_name or '(default)'}")
         if settings.aws_access_key_id:
             print(f"  Access Key: {settings.aws_access_key_id[:8]}...")
         else:
             print("  Access Key: (not set)")
-    else:
+    elif settings.storage_backend == config.StorageBackend.R2:
         if settings.r2_account_id:
             print(f"  Account ID: {settings.r2_account_id[:8]}...")
         else:
@@ -144,9 +144,11 @@ def info():
             print(f"  Access Key: {settings.r2_access_key_id[:8]}...")
         else:
             print("  Access Key: (not set)")
+    else:
+        print(f"  Storage Backend: {settings.storage_backend.value}")
     
-    print(f"  Prefix: {settings.pm_prefix or '(none)'}")
-    print(f"  Media Root: {settings.pm_media_root}")
+    print(f"  Prefix: {settings.prefix or '(none)'}")
+    print(f"  Media Root: {settings.media_root}")
 
 
 @app.command(name="config")

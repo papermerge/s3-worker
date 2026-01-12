@@ -7,7 +7,13 @@ from .api import (
     update_doc_img_preview_status,
     get_doc_img_preview_status,
     get_doc_ver_from_page,
-    get_page_number
+    get_page_number,
+    get_document_version,
+    get_document_processing_status,
+    update_document_processing_status,
+    create_document_version,
+    create_pages_for_version,
+    update_version_page_count
 )
 
 
@@ -24,4 +30,10 @@ __all__ = [
     'Document',
     'DocumentVersion',
     'Page',
+    'get_document_version',
+    'get_document_processing_status',
+    'update_document_processing_status',
+    'create_document_version',
+    'create_pages_for_version',
+    'update_version_page_count'
 ]

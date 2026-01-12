@@ -1,8 +1,7 @@
 import uuid
 from typing import Literal
-from sqlalchemy import ForeignKey, Enum, String
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from s3worker.types import ImagePreviewStatus
+from sqlalchemy import ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 
 CType = Literal["document", "folder"]
@@ -18,9 +17,6 @@ class User(Base):
     last_name: Mapped[str] = mapped_column(default=" ")
     password: Mapped[str] = mapped_column(nullable=False)
     is_superuser: Mapped[bool] = mapped_column(default=False)
-    nodes: Mapped[list["Node"]] = relationship(
-        back_populates="user", primaryjoin="User.id == Node.user_id", cascade="delete"
-    )
 
 
 class Node(Base):
@@ -30,18 +26,6 @@ class Node(Base):
     title: Mapped[str] = mapped_column(String(200))
     ctype: Mapped[CType]
     lang: Mapped[str] = mapped_column(String(8), default="deu")
-    user: Mapped["User"] = relationship(
-        back_populates="nodes",
-        primaryjoin="User.id == Node.user_id",
-        remote_side=User.id,
-        cascade="delete",
-    )
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey(
-            "users.id", use_alter=True, name="nodes_user_id_fkey", ondelete="CASCADE"
-        ),
-        nullable=True,
-    )
 
     parent_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("nodes.id"), nullable=True)
 

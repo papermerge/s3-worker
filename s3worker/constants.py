@@ -22,5 +22,5 @@ S3_WORKER_GENERATE_DOC_THUMBNAIL = "s3_worker_generate_doc_thumbnail"
 # generate preview image(s) for one or multiple document pages
 S3_WORKER_GENERATE_PAGE_IMAGE = "s3_worker_generate_page_image"
 # process uploaded document (convert images, count pages, create page records)
-S3_WORKER_PROCESS_UPLOAD = "document.process_upload"
+
 

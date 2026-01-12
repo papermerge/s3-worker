@@ -156,7 +156,7 @@ def update_document_processing_status(
 def get_document_version(
     db_session: Session,
     version_id: UUID
-) -> schemas.DocumentVersion | None:
+) -> DocumentVersion | None:
     """Get a specific document version"""
     stmt = select(DocumentVersion).where(DocumentVersion.id == version_id)
     db_ver = db_session.execute(stmt).scalar_one_or_none()
@@ -164,7 +164,7 @@ def get_document_version(
     if db_ver is None:
         return None
     
-    return schemas.DocumentVersion.model_validate(db_ver)
+    return db_ver
 
 
 def create_document_version(
