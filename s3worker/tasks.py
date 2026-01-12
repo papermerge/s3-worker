@@ -14,7 +14,7 @@ from s3worker import generate, client, db, plib, exc, utils, types
 from s3worker.config import get_settings
 from s3worker import constants as const
 from s3worker.db.engine import Session
-from s3worker.types import ImagePreviewSize, ImagePreviewStatus
+from s3worker.types import ImagePreviewSize, ImagePreviewStatus, StorageBackend
 from s3worker.types import MimeType, DocumentProcessingStatus
 from s3worker.db.orm import DocumentVersion
 
@@ -132,7 +132,12 @@ def generate_doc_thumbnail_task(doc_id: str):
     autoretry_for=(Exception,),
     retry_kwargs={"max_retries": 3, "countdown": 5},
 )
-def process_upload_task(document_id: str, document_version_id: str):
+def process_upload_task(
+    document_id: str,
+    document_version_id: str,
+    user_id: str,
+    lang: str
+):
     """
     Process uploaded document after upload to storage.
     
@@ -282,6 +287,8 @@ def process_upload_task(document_id: str, document_version_id: str):
                             file_name=pdf_filename,
                             size=len(pdf_bytes),
                             mime_type=MimeType.application_pdf.value,
+                            created_by=user_id,
+                            lang=lang,
                             page_count=page_count,
                             is_original=False,
                             source_version_id=ver_id,

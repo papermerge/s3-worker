@@ -2,6 +2,8 @@ import uuid
 from typing import Literal
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from .audit_cols import AuditColumns
 from .base import Base
 
 CType = Literal["document", "folder"]
@@ -80,7 +82,7 @@ class Document(Node):
     }
 
 
-class DocumentVersion(Base):
+class DocumentVersion(Base, AuditColumns):
     __tablename__ = "document_versions"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
@@ -89,7 +91,8 @@ class DocumentVersion(Base):
     size: Mapped[int] = mapped_column(default=0)
     page_count: Mapped[int] = mapped_column(default=0)
     mime_type: Mapped[str] = mapped_column(nullable=True)
-    
+    lang: Mapped[str] = mapped_column(default="deu")
+
     # Version lineage tracking
     is_original: Mapped[bool] = mapped_column(default=False, nullable=True)
     source_version_id: Mapped[uuid.UUID] = mapped_column(nullable=True)

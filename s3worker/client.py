@@ -140,6 +140,10 @@ def add_doc_ver(client: BaseClient, uid: UUID):
 
 def remove_doc_vers(doc_ver_ids: list[str]):
     """Given a list of UUID (as str) - remove those documents from S3/R2"""
+    if settings.storage_backend == StorageBackend.LOCAL.value:
+        logger.info(f"Nothing to do for local storage backend")
+        return
+
     s3_client = get_client()
     for ver in doc_ver_ids:
         uid = UUID(ver)
@@ -148,6 +152,9 @@ def remove_doc_vers(doc_ver_ids: list[str]):
 
 def remove_doc_ver(client: BaseClient, uid: UUID):
     logger.info(f"Removing doc_ver {uid} from the bucket")
+    if settings.storage_backend == StorageBackend.LOCAL.value:
+        logger.info(f"Nothing to do for local storage backend")
+        return
 
     prefix = str(get_prefix() / plib.docver_base_path(uid))
     remove_files(
@@ -159,6 +166,10 @@ def remove_doc_ver(client: BaseClient, uid: UUID):
 
 def remove_doc_thumbnail(uid: UUID):
     logger.info(f"Removing thumbnail of doc_id={uid} from the bucket")
+    if settings.storage_backend == StorageBackend.LOCAL.value:
+        logger.info(f"Nothing to do for local storage backend")
+        return
+
     s3_client = get_client()
     prefix = str(get_prefix() / plib.thumbnail_path(uid))
     remove_files(

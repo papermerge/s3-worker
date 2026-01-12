@@ -174,6 +174,8 @@ def create_document_version(
     file_name: str,
     size: int,
     mime_type: str,
+    created_by: str,
+    lang: str,
     page_count: int = 0,
     is_original: bool = False,
     source_version_id: UUID | None = None,
@@ -186,10 +188,12 @@ def create_document_version(
         file_name=file_name,
         size=size,
         mime_type=mime_type,
+        created_by=created_by,
         page_count=page_count,
         is_original=is_original,
         source_version_id=source_version_id,
-        creation_reason=creation_reason
+        creation_reason=creation_reason,
+        lang=lang
     )
     
     db_session.add(version)
