@@ -100,7 +100,8 @@ uv sync
 uv run celery -A s3worker.celery_app worker --loglevel=info
 
 # Or with specific queues
-uv run celery -A s3worker.celery_app worker -Q demo_s3preview,demo_s3
+uv run celery -A s3worker.celery_app worker -Q demo_s3preview,demo_s3,
+demo_document_processing
 ```
 
 ### CLI Commands

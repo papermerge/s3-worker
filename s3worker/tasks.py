@@ -1,16 +1,18 @@
 import logging
 import uuid
 from uuid import UUID
-from celery import shared_task
-import botocore.exceptions
 
-from s3worker import generate, client, db
+import botocore.exceptions
+from celery import shared_task
+
+from s3worker import generate, client, db, exc, types
 from s3worker.config import get_settings
 from s3worker import constants as const
-from s3worker import exc
 from s3worker.db.engine import Session
-from s3worker.config import FileServer
+from s3worker.db import post_upload_processing
 from s3worker.types import ImagePreviewSize, ImagePreviewStatus
+from s3worker.types import MimeType, DocumentProcessingStatus
+
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -98,7 +100,7 @@ def generate_doc_thumbnail_task(doc_id: str):
             thumb_path = generate.doc_thumbnail(db_session, UUID(doc_id))
 
         try:
-            if settings.pm_file_server != FileServer.S3_LOCAL_TEST:
+            if settings.storage_backend != types.StorageBackend.LOCAL:
                 client.upload_file(thumb_path)  # upload to S3
             with Session() as db_session:
                 db.update_doc_img_preview_status(
@@ -118,3 +120,71 @@ def generate_doc_thumbnail_task(doc_id: str):
 
     except Exception as ex:
         logger.exception(ex)
+
+
+@shared_task(
+    name="process_upload",
+    autoretry_for=(Exception,),
+    retry_kwargs={"max_retries": 3, "countdown": 5},
+)
+def process_upload_task(
+    document_id: str,
+    document_version_id: str,
+    user_id: str,
+    lang: str
+):
+    """
+    Process uploaded document after upload to storage.
+    
+    This task handles:
+    1. For PDFs: Count pages, create page records
+    2. For Images (PNG/JPEG/TIFF): Convert to PDF, upload, count pages, create page records
+    
+    Args:
+        document_id: UUID of the document
+        document_version_id: UUID of the document version (version 1 - the original)
+    """
+
+    doc_id = UUID(document_id)
+    ver_id = UUID(document_version_id)
+    
+    logger.info(f"Starting document processing for doc={doc_id}, version={ver_id}")
+    
+    try:
+        with Session() as db_session:
+            version = db.get_document_version(db_session, ver_id)
+            
+            if version is None:
+                logger.error(f"Document version {ver_id} not found")
+                return
+
+            if version.mime_type == MimeType.application_pdf.value:
+                post_upload_processing.process_pdf_document(
+                    db_session,
+                    doc_id=doc_id,
+                    ver_id=ver_id,
+                    lang=lang,
+                    version=version,
+                )
+            else:
+                post_upload_processing.process_non_pdf_document(
+                    db_session,
+                    doc_id=doc_id,
+                    ver_id=ver_id,
+                    lang=lang,
+                    user_id=UUID(user_id),
+                    version=version,
+                )
+    except Exception as ex:
+        logger.exception(f"Fatal error processing document {doc_id}: {ex}")
+        try:
+            with Session() as db_session:
+                db.update_document_processing_status(
+                    db_session,
+                    doc_id,
+                    status=DocumentProcessingStatus.failed.value,
+                    error=str(ex)
+                )
+        except Exception as db_ex:
+            logger.error(f"Failed to update error status: {db_ex}")
+        raise

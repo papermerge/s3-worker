@@ -42,14 +42,14 @@ def get_client() -> BaseClient:
     if _client is not None:
         return _client
 
-    if settings.pm_storage_backend == StorageBackend.AWS:
+    if settings.storage_backend == StorageBackend.S3:
         session = boto3.Session(
             aws_access_key_id=settings.aws_access_key_id,
             aws_secret_access_key=settings.aws_secret_access_key,
             region_name=settings.aws_region_name
         )
         _client = session.client('s3')
-    else:
+    elif settings.storage_backend == StorageBackend.R2:
         # Cloudflare R2
         session = boto3.Session(
             aws_access_key_id=settings.r2_access_key_id,
@@ -61,6 +61,8 @@ def get_client() -> BaseClient:
             region_name='auto',  # Required by boto3 but not used by R2
             config=BotoConfig(signature_version='s3v4')
         )
+    else:
+        raise ValueError(f"Unsupported storage backend: {settings.storage_backend}")
 
     return _client
 
@@ -138,6 +140,10 @@ def add_doc_ver(client: BaseClient, uid: UUID):
 
 def remove_doc_vers(doc_ver_ids: list[str]):
     """Given a list of UUID (as str) - remove those documents from S3/R2"""
+    if settings.storage_backend == StorageBackend.LOCAL.value:
+        logger.info(f"Nothing to do for local storage backend")
+        return
+
     s3_client = get_client()
     for ver in doc_ver_ids:
         uid = UUID(ver)
@@ -146,6 +152,9 @@ def remove_doc_vers(doc_ver_ids: list[str]):
 
 def remove_doc_ver(client: BaseClient, uid: UUID):
     logger.info(f"Removing doc_ver {uid} from the bucket")
+    if settings.storage_backend == StorageBackend.LOCAL.value:
+        logger.info(f"Nothing to do for local storage backend")
+        return
 
     prefix = str(get_prefix() / plib.docver_base_path(uid))
     remove_files(
@@ -157,6 +166,10 @@ def remove_doc_ver(client: BaseClient, uid: UUID):
 
 def remove_doc_thumbnail(uid: UUID):
     logger.info(f"Removing thumbnail of doc_id={uid} from the bucket")
+    if settings.storage_backend == StorageBackend.LOCAL.value:
+        logger.info(f"Nothing to do for local storage backend")
+        return
+
     s3_client = get_client()
     prefix = str(get_prefix() / plib.thumbnail_path(uid))
     remove_files(
@@ -353,19 +366,17 @@ def media_iter():
 
 
 def get_bucket_name():
-    return settings.pm_s3_bucket_name
+    return settings.bucket_name
 
 
 def get_prefix():
-    return Path(settings.pm_prefix) if settings.pm_prefix else Path('')
+    return Path(settings.prefix) if settings.prefix else Path('')
 
 
 def get_media_root():
-    return settings.pm_media_root
+    return settings.media_root
 
 
 def get_storage_backend_name() -> str:
     """Return human-readable storage backend name."""
-    if settings.pm_storage_backend == StorageBackend.AWS:
-        return "AWS S3"
-    return "Cloudflare R2"
+    return settings.storage_backend
