@@ -1,18 +1,22 @@
+import uuid
 import logging
 from uuid import UUID
 from sqlalchemy import select
-import tempfile
-import img2pdf
-from pathlib import Path
 
-from typing import Tuple
-from pikepdf import Pdf
+from typing import Tuple, Dict
 
+from s3worker import schemas, types, constants
 from s3worker.config import get_settings
-from s3worker import schemas, utils, plib, types, client
-from s3worker.db.orm import (Document, DocumentVersion, Page)
+from s3worker.db.orm import (
+    Document,
+    DocumentVersion,
+    Page,
+    Ownership,
+    Folder,
+    SpecialFolder
+)
 from s3worker.db.engine import Session
-from s3worker.types import ImagePreviewStatus, DocumentProcessingStatus, MimeType
+from s3worker.types import ImagePreviewStatus
 
 
 settings = get_settings()
@@ -270,3 +274,110 @@ def update_version_page_count(
         db_session.rollback()
         raise e
 
+
+def set_owner(
+    db_session: Session,
+    resource: schemas.Resource,
+    owner: schemas.Owner
+) -> Ownership:
+    """
+    Set or update the owner of a resource.
+
+    Creates ownership record if it doesn't exist, updates if it does.
+    """
+    stmt = select(Ownership).where(
+        Ownership.resource_type == resource.type.value,
+        Ownership.resource_id == resource.id
+    )
+    ownership = db_session.execute(stmt).scalar_one_or_none()
+
+    if ownership:
+        # Update existing ownership
+        ownership.owner_type = owner.owner_type.value
+        ownership.owner_id = owner.owner_id
+    else:
+        # Create new ownership
+        ownership = Ownership(
+            owner_type=owner.owner_type.value,
+            owner_id=owner.owner_id,
+            resource_type=resource.type.value,
+            resource_id=resource.id
+        )
+        db_session.add(ownership)
+
+    db_session.flush()
+    return ownership
+
+
+def create_special_folders_for_user(
+    db_session: Session,
+    user_id: UUID,
+) -> Dict[str, UUID]:
+    """
+    Create home and inbox folders for a user.
+
+    Args:
+        db_session: Database session
+        user_id: User ID
+
+    Returns:
+        Dictionary with 'home' and 'inbox' keys mapping to folder IDs
+    """
+    owner = schemas.Owner.create_from(user_id=user_id)
+    home_id = uuid.uuid4()
+    inbox_id = uuid.uuid4()
+
+    # Create the actual folder nodes WITHOUT user_id
+    home_folder = Folder(
+        id=home_id,
+        title=constants.HOME_TITLE,
+        ctype=constants.CTYPE_FOLDER,
+        lang="xxx",
+        created_by=constants.SYSTEM_USER_ID,
+        updated_by=constants.SYSTEM_USER_ID,
+    )
+    inbox_folder = Folder(
+        id=inbox_id,
+        title=constants.INBOX_TITLE,
+        ctype=constants.CTYPE_FOLDER,
+        lang="xxx",
+        created_by=constants.SYSTEM_USER_ID,
+        updated_by=constants.SYSTEM_USER_ID,
+    )
+
+    db_session.add(home_folder)
+    db_session.add(inbox_folder)
+    db_session.flush()
+
+    set_owner(
+        db_session=db_session,
+        resource=schemas.NodeResource(id=home_id),
+        owner=owner,
+    )
+
+    set_owner(
+        db_session=db_session,
+        resource=schemas.NodeResource(id=inbox_id),
+        owner=owner
+    )
+
+    home_special = SpecialFolder(
+        owner_type=types.OwnerType.USER.value,
+        owner_id=user_id,
+        folder_type=types.FolderType.HOME.value,
+        folder_id=home_id
+    )
+    inbox_special = SpecialFolder(
+        owner_type=types.OwnerType.USER.value,
+        owner_id=user_id,
+        folder_type=types.FolderType.INBOX.value,
+        folder_id=inbox_id
+    )
+
+    db_session.add_all([home_special, inbox_special])
+    db_session.flush()
+
+    return {
+        'home': home_id,
+        'inbox': inbox_id
+    }

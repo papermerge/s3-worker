@@ -1,4 +1,4 @@
-from enum import Enum
+import uuid
 
 INBOX_TITLE = "inbox"
 HOME_TITLE = "home"
@@ -24,3 +24,9 @@ S3_WORKER_GENERATE_PAGE_IMAGE = "s3_worker_generate_page_image"
 # process uploaded document (convert images, count pages, create page records)
 
 
+"""
+System user is special user who own resources created by background tasks
+and initialization scripts
+"""
+SYSTEM_USER_ID = uuid.UUID("00000000-0000-0000-0000-000000000000")
+SYSTEM_USER_USERNAME = "system"

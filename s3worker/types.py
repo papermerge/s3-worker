@@ -56,3 +56,29 @@ class StorageBackend(str, Enum):
     S3 = 's3'
     R2 = 'r2'
     LOCAL = 'local'
+
+
+class OwnerType(str, Enum):
+    """
+    Type of owner for a special folder.
+
+    Special folders can be owned by either individual users or groups.
+    """
+    USER = "user"
+    GROUP = "group"
+
+
+class ResourceType(str, Enum):
+    """Resources that can be owned"""
+    NODE = "node"
+    CUSTOM_FIELD = "custom_field"
+    DOCUMENT_TYPE = "document_type"
+    TAG = "tag"
+
+
+class FolderType(str, Enum):
+    """
+    Type of special folder.
+    """
+    HOME = "home"
+    INBOX = "inbox"

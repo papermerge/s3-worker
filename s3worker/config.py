@@ -7,9 +7,10 @@ from .types import  StorageBackend
 
 
 class Settings(BaseSettings):
-    media_root: str
     db_url: PostgresDsn
-    redis_url: RedisDsn
+
+    media_root: Path = Path("media")
+    redis_url: RedisDsn | None = None # redis_url is None during tests
 
     # Storage backend selection (S3, R2 or Local)
     storage_backend: StorageBackend = StorageBackend.LOCAL

@@ -1,15 +1,11 @@
 from uuid import UUID
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy import func, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 
-
-
-def utc_now():
-    """Returns current time in UTC - always use for database timestamps"""
-    return datetime.now(timezone.utc)
+from .utils import utc_now
 
 
 class AuditColumns:

@@ -1,7 +1,8 @@
+import uuid
 from uuid import UUID
 from pydantic import (BaseModel, ConfigDict, Field)
 
-from s3worker import plib
+from s3worker import plib, types
 
 
 class Page(BaseModel):
@@ -39,3 +40,29 @@ class Document(BaseModel):
 
     # Config
     model_config = ConfigDict(from_attributes=True)
+
+
+class Resource(BaseModel):
+    type: types.ResourceType
+    id: uuid.UUID
+
+
+class NodeResource(Resource):
+    type: types.ResourceType = types.ResourceType.NODE
+
+
+class Owner(BaseModel):
+    owner_type: types.OwnerType
+    owner_id: uuid.UUID
+
+    @staticmethod
+    def create_from(
+        user_id: uuid.UUID | None = None,
+        group_id: uuid.UUID | None = None
+    ) -> "Owner":
+        if group_id is not None:
+            return Owner(owner_type=types.OwnerType.GROUP, owner_id=group_id)
+        elif user_id is not None:
+            return Owner(owner_type=types.OwnerType.USER, owner_id=user_id)
+        else:
+            raise ValueError("Either user_id or group_id must be provided")
