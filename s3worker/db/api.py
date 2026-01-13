@@ -1,11 +1,22 @@
+import logging
 from uuid import UUID
 from sqlalchemy import select
+import tempfile
+import img2pdf
+from pathlib import Path
 
 from typing import Tuple
-from s3worker import schemas, types
+from pikepdf import Pdf
+
+from s3worker.config import get_settings
+from s3worker import schemas, utils, plib, types, client
 from s3worker.db.orm import (Document, DocumentVersion, Page)
 from s3worker.db.engine import Session
-from s3worker.types import ImagePreviewStatus
+from s3worker.types import ImagePreviewStatus, DocumentProcessingStatus, MimeType
+
+
+settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 def get_docs(db_session: Session) -> list[schemas.Document]:
@@ -174,7 +185,7 @@ def create_document_version(
     file_name: str,
     size: int,
     mime_type: str,
-    created_by: str,
+    created_by: UUID,
     lang: str,
     page_count: int = 0,
     is_original: bool = False,
@@ -189,6 +200,7 @@ def create_document_version(
         size=size,
         mime_type=mime_type,
         created_by=created_by,
+        updated_by=created_by,
         page_count=page_count,
         is_original=is_original,
         source_version_id=source_version_id,
