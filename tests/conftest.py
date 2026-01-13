@@ -10,7 +10,7 @@ from s3worker.db import orm
 from s3worker.db import api
 
 from s3worker.config import get_settings
-from s3worker import constants
+from s3worker import constants, types
 
 config = get_settings()
 
@@ -131,3 +131,86 @@ def make_page(db_session: Session, user: orm.User, system_user):
 @pytest.fixture()
 def user(make_user) -> orm.User:
     return make_user(username="random")
+
+
+@pytest.fixture()
+def mock_pdf_file():
+    """Mock PDF file object with pages"""
+    from unittest import mock
+    mock_pdf = mock.MagicMock()
+    mock_pdf.pages = [mock.MagicMock() for _ in range(3)]
+    mock_pdf.close = mock.MagicMock()
+    return mock_pdf
+
+
+@pytest.fixture()
+def pdf_document_with_version(db_session, user, system_user):
+    doc_id = uuid.uuid4()
+    ver_id = uuid.uuid4()
+
+    document = orm.Document(
+        id=doc_id,
+        ctype="document",
+        title="Test PDF Document",
+        parent_id=user.home_folder_id,
+        lang="eng",
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
+
+    version = orm.DocumentVersion(
+        id=ver_id,
+        document_id=doc_id,
+        file_name="test.pdf",
+        size=1024,
+        number=1,
+        mime_type=types.MimeType.application_pdf.value,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
+
+    db_session.add(document)
+    db_session.add(version)
+    db_session.commit()
+    db_session.refresh(document)
+    db_session.refresh(version)
+
+    return document, version
+
+
+@pytest.fixture()
+def image_document_with_version(db_session, user, system_user):
+    """Create a real image document with version in the database"""
+    from s3worker.types import MimeType
+
+    doc_id = uuid.uuid4()
+    ver_id = uuid.uuid4()
+
+    document = orm.Document(
+        id=doc_id,
+        ctype="document",
+        title="Test Image Document",
+        parent_id=user.home_folder_id,
+        lang="eng",
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
+
+    version = orm.DocumentVersion(
+        id=ver_id,
+        document_id=doc_id,
+        file_name="test.png",
+        size=1024,
+        number=1,
+        mime_type=MimeType.image_png.value,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
+
+    db_session.add(document)
+    db_session.add(version)
+    db_session.commit()
+    db_session.refresh(document)
+    db_session.refresh(version)
+
+    return document, version

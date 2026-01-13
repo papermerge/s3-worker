@@ -24,6 +24,17 @@ settings = config.get_settings()
 logger = logging.getLogger(__name__)
 
 
+def get_page_count(abs_path: Path):
+    page_count = 0
+
+    with open(abs_path, 'rb') as f:
+        pdf = Pdf.open(f)
+        page_count = len(pdf.pages)
+        pdf.close()
+
+    return page_count
+
+
 def process_pdf_document(
     db_session: Session,
     doc_id: UUID,
@@ -50,11 +61,7 @@ def process_pdf_document(
 
     original_path = plib.abs_docver_path(ver_id, version.file_name)
 
-    # Count pages
-    with open(original_path, 'rb') as f:
-        pdf = Pdf.open(f)
-        page_count = len(pdf.pages)
-        pdf.close()
+    page_count = get_page_count(original_path)
 
     logger.info(f"PDF has {page_count} pages")
 
