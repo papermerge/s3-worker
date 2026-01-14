@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7] - 2026-01-14
+
+### Added
+
+- Post upload processing (converting of jpen/png/tiff to PDF)
+- Worker is used also on local setup (because of required post upload processing)
+
 ## [0.6] - 2026-01-01
 
 ### Added
