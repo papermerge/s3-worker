@@ -37,7 +37,7 @@ Repository = "https://github.com/papermerge/s3-worker"
 
 [dependency-groups]
 dev = [
-    "taskipy>=1.12.2",
+    "taskipy>=1.14.1",
     "pytest>=9.0.1",
 ]
 
